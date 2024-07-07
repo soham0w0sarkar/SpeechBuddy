@@ -1,57 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Firebase Auth Extension - Home</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-  <div id="home-view">
-    <h2>Welcome to Home</h2>
-    <p>This is your home view content.</p>
-    <main>
-      <div id="formContainer">
-        <label id ="tailoredQuestionsLabel" for="tailoredQuestions"> Tailored questions?</label>
-        <select id="tailoredQuestions">
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
-        <label for="gradeLevel">Select Grade Level:</label>
-        <select id="gradeLevel">
-          <option value="">Select Grade Level</option>
-        </select>
-        
-        <label for="pillar">Select Pillar:</label>
-        <select id="pillar">
-          <option value="">Select Pillar</option>
-        </select>
-        
-        <label for="goal">Select Goal:</label>
-        <select id="goal">
-          <option value="">Select Goal</option>
-        </select>
-        <br><br>
-        <div id="additionalFields"></div>
-        <br><br>
-        <button id="continueBtn" disabled>Continue</button>
-      </div>
-    </main>
-    <div>
-      <button id="dashboard-button" class="text-button left-align">Open Dashboard</button>
-      <button id="logout-button" class="text-button right-align">Logout</button>
-    </div>
-  </div>
-  <div id="loader" class="hidden"></div>
-  <script src="firebase-app-compat.js"></script>
-  <script src="firebase-auth-compat.js"></script>
-  <script src="firebase-storage-compat.js"></script>
-  <script src="scripts/firebease-config.js"></script>
-  <script src="firebase-firestore-compat.js"></script>
-  <script src="scripts/loader.js"></script>
-  <script src="scripts/navigation.js"></script>
-  <script src="scripts/fetch-user-from-firebase.js"></script>
-  <script src="scripts/is-user-subscribed.js"></script>
-  <script src="scripts/cookies.js"></script>
-  <script src="scripts/home.js"></script>
-  
-</body>
+    <head>
+        <title>Firebase Auth Extension - Home</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
+    <body>
+        <div id="home-view">
+            <h2>Welcome to Home</h2>
+            <p>This is your home view content.</p>
+            <div class="main">
+                <div id="formContainer">
+                    <label id="tailoredQuestionsLabel" for="tailoredQuestions">
+                        Tailored questions?</label
+                    >
+                    <select id="tailoredQuestions">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                    <label for="gradeLevel">Select Grade Level:</label>
+                    <select id="gradeLevel">
+                        <option value="">Select Grade Level</option>
+                    </select>
+
+                    <label for="pillar">Select Pillar:</label>
+                    <select id="pillar">
+                        <option value="">Select Pillar</option>
+                    </select>
+
+                    <label for="goal">Select Goal:</label>
+                    <select id="goal">
+                        <option value="">Select Goal</option>
+                    </select>
+                    <div id="additionalFields"></div>
+                    <button id="continueBtn" disabled>Continue</button>
+                </div>
+            </div>
+            <div class="footer">
+                <button id="dashboard-button" class="text-button left-align">
+                    Open Dashboard
+                </button>
+                <button id="logout-button" class="text-button right-align">
+                    Logout
+                </button>
+            </div>
+        </div>
+        <div id="loader" class="hidden"></div>
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-storage-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="scripts/home.js"></script>
+    </body>
 </html>

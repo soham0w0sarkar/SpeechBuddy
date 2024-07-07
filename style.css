@@ -2,9 +2,8 @@ body {
     font-family: Arial, sans-serif;
     width: 300px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     transition: all 0.5s;
-    background-color: white;
 }
 
 .hidden {
@@ -66,11 +65,6 @@ button:hover {
     gap: 10px;
 }
 
-.right-align {
-    text-align: right;
-    width: 100%;
-}
-
 #loader {
     border: 5px solid #f3f3f3;
     border-radius: 50%;
@@ -81,20 +75,57 @@ button:hover {
     z-index: 1000; /* Add this line */
 }
 
+.left-align {
+    text-align: left;
+}
+
+.right-align {
+    text-align: right;
+}
+
+/* Home */
+#home-view {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.main {
+    flex-grow: 2;
+}
+
 #formContainer {
-    max-width: 600px;
-    margin: 0 auto;
+    width: 100%;
 }
 
 label,
 select {
+    width: 100%;
     display: block;
     margin-bottom: 10px;
+}
+
+.checkbox * {
+    margin: 0;
+    width: fit-content;
+}
+
+.checkbox {
+    display: flex;
+    gap: 10px;
+    margin: 10px;
+    padding-left: 10px;
 }
 
 button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+.footer {
+    width: 100%;
+    display: flex;
+    justify-content: s;
 }
 
 /* FLASHCARDs */
