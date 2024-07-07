@@ -3,6 +3,7 @@ body {
     width: 300px;
     margin: 0 auto;
     padding: 20px;
+    transition: all 0.5s;
     background-color: white;
 }
 
@@ -31,14 +32,15 @@ button {
     width: 100%;
     padding: 10px;
     margin: 5px 0;
-    background-color: #4caf50;
+    border-radius: 5px;
+    background-color: #195c56;
     color: white;
     border: none;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #21776e;
 }
 
 .text-button {
