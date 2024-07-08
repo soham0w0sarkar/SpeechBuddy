@@ -275,7 +275,6 @@ function startRecording() {
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
   const timer = document.getElementById("timer");
-  let intervalId;
 
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
@@ -291,7 +290,6 @@ function startRecording() {
       counter();
     })
     .catch((err) => {
-      // Permission denied or error occurred
       console.error("Error accessing microphone:", err.message);
     });
 }
@@ -303,7 +301,6 @@ function counter() {
   let sec = 0;
 
   intervalId = setInterval(() => {
-    console.log("timer", sec);
     sec++;
     if (sec === 60) {
       min++;
@@ -331,14 +328,20 @@ function stopRecording() {
 
   clearInterval(intervalId);
 
-  mediaRecorder.onstop = () => {
+  mediaRecorder.onstop = async () => {
     const blob = new Blob(recordedChunks, { type: "audio/wav" });
     recordedChunks = [];
-    uploadAudio(blob);
+    await uploadAudio(blob);
   };
 }
 
-function uploadAudio(audioBlob) {
+async function uploadAudio(audioBlob) {
+  const buttons = document.querySelectorAll("button");
+
+  for (let button of buttons) {
+    button.disabled = true;
+  }
+
   showLoader();
 
   const storageRef = firebase.storage().ref();
@@ -347,7 +350,7 @@ function uploadAudio(audioBlob) {
     uid + "_" + session.toString() + "_" + currentIndex.toString() + ".wav";
   const audioFileRef = storageRef.child(audioFileName);
 
-  audioFileRef
+  await audioFileRef
     .put(audioBlob)
     .then((snapshot) => {
       console.log("Uploaded audio successfully:", snapshot);
@@ -360,6 +363,10 @@ function uploadAudio(audioBlob) {
       console.error("Error uploading audio:", error);
       hideLoader();
     });
+
+  for (let button of buttons) {
+    button.disabled = false;
+  }
 }
 
 async function openDashboard() {
