@@ -24,6 +24,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     const stopButton = document.getElementById("stop-button");
     recordButton.addEventListener("click", startRecording);
     stopButton.addEventListener("click", stopRecording);
+    const backButton = document.getElementById("backButton");
+    backButton.addEventListener("click", () => {
+      navigateTo("home.html");
+    });
+
     const generateButton = document.getElementById("generateButton");
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       const tab = tabs[0];
@@ -126,44 +131,63 @@ function previousFlashcard() {
 }
 
 function hideContent() {
-  // hide flashcardContainer, previousBtn, nextBtn, currentIndex, record-button, stop-button, generateButton
-  const flashcardContainer = document.getElementById("flashcardContainer");
-  flashcardContainer.classList.add("hidden");
-  const previousBtn = document.getElementById("previousBtn");
-  previousBtn.classList.add("hidden");
-  const nextBtn = document.getElementById("nextBtn");
-  nextBtn.classList.add("hidden");
-  const currentIndex = document.getElementById("currentIndex");
-  currentIndex.classList.add("hidden");
-  const recordButton = document.getElementById("record-button");
-  recordButton.classList.add("hidden");
-  const stopButton = document.getElementById("stop-button");
-  stopButton.classList.add("hidden");
-  const generateButton = document.getElementById("generateButton");
-  generateButton.classList.add("hidden");
+  // IDs of elements to hide
+  const elementsToHide = [
+    "flashcardContainer",
+    "previousBtn",
+    "nextBtn",
+    "currentIndex",
+    "record-button",
+    "stop-button",
+    "generateButton",
+    "backButton",
+  ];
+
+  // Hide elements by adding the 'hidden' class
+  for (let i = 0; i < elementsToHide.length; i++) {
+    const element = document.getElementById(elementsToHide[i]);
+    if (element) {
+      element.classList.add("hidden");
+    }
+  }
+
+  // Stop further execution
+  return;
 }
+
 function showContent() {
-  const flashcardContainer = document.getElementById("flashcardContainer");
-  flashcardContainer.classList.remove("hidden");
-  const previousBtn = document.getElementById("previousBtn");
-  previousBtn.classList.remove("hidden");
-  const nextBtn = document.getElementById("nextBtn");
-  nextBtn.classList.remove("hidden");
-  const currentIndex = document.getElementById("currentIndex");
-  currentIndex.classList.remove("hidden");
+  // IDs of elements to show
+  const elementsToShow = [
+    "flashcardContainer",
+    "previousBtn",
+    "nextBtn",
+    "currentIndex",
+    "generateButton",
+    "backButton",
+  ];
+
+  // Show elements by removing the 'hidden' class
+  for (let i = 0; i < elementsToShow.length; i++) {
+    const element = document.getElementById(elementsToShow[i]);
+    if (element) {
+      element.classList.remove("hidden");
+    }
+  }
+
+  // Conditionally show recordButton
   const recordButton = document.getElementById("record-button");
-  recordButton.classList.remove("hidden");
-  const generateButton = document.getElementById("generateButton");
-  generateButton.classList.remove("hidden");
-  if (isSubscribed.toString() === "true") {
+  if (recordButton && isSubscribed.toString() === "true") {
     recordButton.classList.remove("hidden");
   }
+
+  // Stop further execution
+  return;
 }
 
 async function fetchFlashcards() {
   try {
-    showLoader();
     hideContent();
+    showLoader();
     const prompt = generatePrompt(goal, gradeLevel, pillar, additionalParams);
     console.log("Generated Prompt:", prompt);
 

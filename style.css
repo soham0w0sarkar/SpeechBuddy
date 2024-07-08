@@ -1,5 +1,5 @@
 * {
-    transition: all 0.5s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 body {
@@ -93,6 +93,11 @@ button:hover {
     width: 100%;
 }
 
+header {
+    color: black;
+    text-align: center;
+}
+
 .main {
     flex-grow: 2;
 }
@@ -105,7 +110,13 @@ label,
 select {
     width: 100%;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+select {
+    border-radius: 2px;
+    padding: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .checkbox * {
@@ -128,17 +139,10 @@ button:disabled {
 .footer {
     width: 100%;
     display: flex;
-    justify-content: s;
+    justify-content: space-between;
 }
 
 /* FLASHCARDs */
-
-header {
-    background-color: #00796b;
-    color: white;
-    padding: 10px;
-    text-align: center;
-}
 
 main {
     display: flex;
