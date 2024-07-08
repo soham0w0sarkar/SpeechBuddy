@@ -136,6 +136,7 @@ function hideContent() {
   const currentIndex = document.getElementById("currentIndex");
   currentIndex.classList.add("hidden");
   const recordButton = document.getElementById("record-button");
+  recordButton.classList.add("hidden");
   const stopButton = document.getElementById("stop-button");
   stopButton.classList.add("hidden");
   const generateButton = document.getElementById("generateButton");
@@ -151,6 +152,7 @@ function showContent() {
   const currentIndex = document.getElementById("currentIndex");
   currentIndex.classList.remove("hidden");
   const recordButton = document.getElementById("record-button");
+  recordButton.classList.remove("hidden");
   const generateButton = document.getElementById("generateButton");
   generateButton.classList.remove("hidden");
   if (isSubscribed.toString() === "true") {
