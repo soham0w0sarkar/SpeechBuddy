@@ -30,9 +30,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     const generateButton = document.getElementById("generateButton");
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const tab = tabs[0];
-    });
     generateButton.addEventListener("click", fetchFlashcards);
     const formData = new URLSearchParams(window.location.search);
     gradeLevel = formData.get("gradeLevel");

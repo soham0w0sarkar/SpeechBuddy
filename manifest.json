@@ -1,21 +1,43 @@
 {
-    "manifest_version": 3,
-    "name": "SpeechBuddy",
-    "version": "1.0.1",
-    "description": "A Chrome extension designed to make speech therapy fun by tailoring speech questions into the media content your child is already interested in!",
-    "action": {
-      "default_popup": "popup.html"
+  "manifest_version": 3,
+  "name": "SpeechBuddy",
+  "version": "1.0.1",
+  "description": "A Chrome extension designed to make speech therapy fun by tailoring speech questions into the media content your child is already interested in!",
+  "permissions": ["storage", "tabs"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["*.html"],
+      "matches": ["<all_urls>"]
     },
-    "background": {
-      "service_worker": "background.js"
+    {
+      "resources": ["*.js"],
+      "matches": ["<all_urls>"]
     },
-    "permissions": [
-      "storage",
-       "tabs"
-    ],
-    "content_security_policy": {
-        "script-src": "'self'",
-        "object-src": "'self'"
-      }
+    {
+      "resources": ["*.css"],
+      "matches": ["<all_urls>"]
+    },
+    {
+      "resources": ["src/*.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "script-src": "'self'",
+    "object-src": "'self'",
+    "default-src": "'self'",
+    "connect-src": "'self'"
   }
-  
+}

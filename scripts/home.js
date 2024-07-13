@@ -256,9 +256,8 @@ async function fetchUserAndCheckSubscription() {
     const firebaseDoc = await fetchFirebaseData(uid);
     if (!firebaseDoc) {
       throw new Error("Error fetching user data from Firebase");
-      return;
     }
-    const subscribed = await isSubscribed(firebaseDoc.customerID);
+    const subscribed = await isSubscribed(firebaseDoc.customerId);
     saveUserToCookie({
       email: email,
       subscribed: subscribed,
