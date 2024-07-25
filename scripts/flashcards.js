@@ -20,47 +20,82 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       navigateTo("login.html");
     }
+
+    document.getElementById("nextBtn").addEventListener("click", nextFlashcard);
+    document
+      .getElementById("previousBtn")
+      .addEventListener("click", previousFlashcard);
     const recordButton = document.getElementById("record-button");
     const stopButton = document.getElementById("stop-button");
     recordButton.addEventListener("click", startRecording);
     stopButton.addEventListener("click", stopRecording);
     const backButton = document.getElementById("backButton");
-    backButton.addEventListener("click", () => {
+    backButton.addEventListener("click", async () => {
+      await save(false, "generating");
+      await clearStorage(["questions", "params"]);
       navigateTo("home.html");
     });
+
+    const savedGeneratingState = await loadState("generating");
+    if (savedGeneratingState) {
+      const savedQuestions = await loadState("questions");
+      if (savedQuestions) {
+        questions = savedQuestions.questions;
+        session = savedQuestions.session;
+        renderFlashcards();
+        hideLoader();
+        return;
+      }
+    }
+
+    const savedParams = await loadState("params");
+    if (savedParams) {
+      ({ gradeLevel, pillar, goal } = savedParams);
+      additionalParams = { ...savedParams };
+      delete additionalParams.gradeLevel;
+      delete additionalParams.pillar;
+      delete additionalParams.goal;
+    }
 
     const generateButton = document.getElementById("generateButton");
     generateButton.addEventListener("click", fetchFlashcards);
     const formData = new URLSearchParams(window.location.search);
-    gradeLevel = formData.get("gradeLevel");
-    pillar = formData.get("pillar");
-    goal = formData.get("goal");
 
-    // Additional params from the form
-    additionalParams = {
-      letter: formData.get("letter") || null,
-      position: formData.get("position") || null,
-      word_sentence: formData.get("word_sentence") || null,
-      labeling: formData.get("labeling") || null,
-      activity: formData.get("activity") || null,
-      sequence: formData.get("sequence") || null,
-      events: formData.get("events") || null,
-      definition: formData.get("definition") || null,
-      number_of_syllables: formData.get("number_of_syllables") || null,
-      deletion_type: formData.get("deletion_type") || null,
-      assimilation: formData.get("assimilation") || null,
-      pair_discrim: formData.get("pair_discrim") || null,
-      receptive: formData.get("receptive") || null,
-      receptive_activity: formData.get("receptive_activity") || null,
-      word_type: formData.get("word_type") || null,
-      vocabulary_activity: formData.get("vocabulary_activity") || null,
-      conversation: formData.get("conversation") || null,
-      desensitization: formData.get("desensitization") || null,
-      slow_rate: formData.get("slow_rate") || null,
-    };
+    if (formData.size > 0) {
+      gradeLevel = formData.get("gradeLevel");
+      pillar = formData.get("pillar");
+      goal = formData.get("goal");
 
-    isSubscribed = formData.get("subscribedUser").toString() === "true";
-    tailoredQuestions = formData.get("tailoredQuestions").toString() === "true";
+      additionalParams = {
+        letter: formData.get("letter") || null,
+        position: formData.get("position") || null,
+        word_sentence: formData.get("word_sentence") || null,
+        labeling: formData.get("labeling") || null,
+        activity: formData.get("activity") || null,
+        sequence: formData.get("sequence") || null,
+        events: formData.get("events") || null,
+        definition: formData.get("definition") || null,
+        number_of_syllables: formData.get("number_of_syllables") || null,
+        deletion_type: formData.get("deletion_type") || null,
+        assimilation: formData.get("assimilation") || null,
+        pair_discrim: formData.get("pair_discrim") || null,
+        receptive: formData.get("receptive") || null,
+        receptive_activity: formData.get("receptive_activity") || null,
+        word_type: formData.get("word_type") || null,
+        vocabulary_activity: formData.get("vocabulary_activity") || null,
+        conversation: formData.get("conversation") || null,
+        desensitization: formData.get("desensitization") || null,
+        slow_rate: formData.get("slow_rate") || null,
+      };
+    }
+
+    if (!savedParams)
+      await save({ gradeLevel, pillar, goal, ...additionalParams }, "params");
+
+    isSubscribed =
+      (await loadState("subscribedUser")) ||
+      formData.get("subscribedUser").toString() === "true";
+    await save(isSubscribed, "subscribedUser");
     const recordBtn = document.getElementById("record-button");
     if (isSubscribed.toString() === "true") {
       recordBtn.classList.remove("hidden");
@@ -68,11 +103,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       recordBtn.classList.add("hidden");
     }
     fetchFlashcards();
-
-    document.getElementById("nextBtn").addEventListener("click", nextFlashcard);
-    document
-      .getElementById("previousBtn")
-      .addEventListener("click", previousFlashcard);
   });
 });
 
@@ -185,8 +215,8 @@ async function fetchFlashcards() {
   try {
     hideContent();
     showLoader();
+    await save(true, "generating");
     const prompt = generatePrompt(goal, gradeLevel, pillar, additionalParams);
-    console.log("Generated Prompt:", prompt);
 
     const response = await fetch(
       "https://us-central1-speechbuddy-30390.cloudfunctions.net/processURL",
@@ -216,6 +246,8 @@ async function fetchFlashcards() {
     // const content = data.choices[0].message.content;
     questions = data.questions;
     session = data.session;
+
+    await save({ questions, session }, "questions");
 
     renderFlashcards();
   } catch (error) {
@@ -408,3 +440,31 @@ async function openDashboard() {
 
   window.postMessage({ type: "AUTH_TOKEN", token }, "*");
 }
+
+const save = async (data, key) => {
+  try {
+    await chrome.storage.sync.set({ [key]: data });
+    console.log("Data stored successfully:", data);
+  } catch (error) {
+    console.error("Error storing data", error);
+  }
+};
+
+const loadState = async (key) => {
+  try {
+    const data = await chrome.storage.sync.get([key]);
+    return data[key];
+  } catch (error) {
+    console.error("Error retrieving data", error);
+  }
+};
+
+const clearStorage = async (keys) => {
+  try {
+    await chrome.storage.sync.remove(keys);
+    console.log("Cleared storage keys:", keys);
+  } catch (error) {
+    console.error("Error clearing storage keys:", error);
+    alert("Failed to clear some data. Please try again.");
+  }
+};

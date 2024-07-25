@@ -18,19 +18,11 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["*.html"],
+      "resources": ["popup/*.html"],
       "matches": ["<all_urls>"]
     },
     {
-      "resources": ["*.js"],
-      "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["*.css"],
-      "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["src/*.js"],
+      "resources": ["popup/*.js"],
       "matches": ["<all_urls>"]
     }
   ],
