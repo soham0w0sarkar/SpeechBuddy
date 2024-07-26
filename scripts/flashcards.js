@@ -12,8 +12,11 @@ let session;
 let tailoredQuestions = true;
 let currentTab = "";
 let intervalId;
+let popupRendered = false;
 
 document.addEventListener("DOMContentLoaded", async function () {
+  popupRendered = (await loadState("popup-rendered")) || false;
+
   firebase.auth().onAuthStateChanged(async function (user) {
     if (user) {
       uid = user.uid;
@@ -32,11 +35,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     const backButton = document.getElementById("backButton");
     backButton.addEventListener("click", async () => {
       await save(false, "generating");
-      await clearStorage(["questions", "params"]);
+      await clearStorage(["questions", "params", "popup-rendered"]);
+
+      if (popupRendered) {
+        const tab = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+        await chrome.tabs.sendMessage(tab[0].id, { action: "closePopup" });
+      }
       navigateTo("home.html");
     });
 
     const savedGeneratingState = await loadState("generating");
+    if (savedGeneratingState && popupRendered) window.close();
     if (savedGeneratingState) {
       const savedQuestions = await loadState("questions");
       if (savedQuestions) {
@@ -106,7 +118,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 });
 
-function renderFlashcards() {
+async function renderFlashcards() {
   flashcardContainer.innerHTML = "";
 
   const question = Object.keys(questions)[currentIndex];
@@ -137,6 +149,16 @@ function renderFlashcards() {
     card.classList.toggle("show-answer");
   });
 
+  if (!popupRendered) {
+    const tab = await chrome.tabs.query({ active: true, currentWindow: true });
+    const resposne = await chrome.tabs.sendMessage(tab[0].id, {
+      action: "render",
+    });
+    if (resposne) {
+      await save(true, "popup-rendered");
+    }
+    window.close();
+  }
   updateNavigation();
 }
 
@@ -326,7 +348,9 @@ function extractQuestions(content) {
   return questions;
 }
 
-function startRecording() {
+async function startRecording() {
+  if (popupRendered) await navigator.mediaDevices.getUserMedia({ audio: true });
+
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
   const timer = document.getElementById("timer");
@@ -456,6 +480,7 @@ const loadState = async (key) => {
     return data[key];
   } catch (error) {
     console.error("Error retrieving data", error);
+    return null;
   }
 };
 

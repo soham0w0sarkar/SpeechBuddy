@@ -18,14 +18,23 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["popup/*.html"],
+      "resources": ["*.html"],
       "matches": ["<all_urls>"]
     },
     {
-      "resources": ["popup/*.js"],
+      "resources": ["*.js"],
+      "matches": ["<all_urls>"]
+    },
+    {
+      "resources": ["*.css"],
+      "matches": ["<all_urls>"]
+    },
+    {
+      "resources": ["scripts/*.js"],
       "matches": ["<all_urls>"]
     }
   ],
+
   "content_security_policy": {
     "script-src": "'self'",
     "object-src": "'self'",
