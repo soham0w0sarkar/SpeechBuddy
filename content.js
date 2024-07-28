@@ -12,6 +12,7 @@ const renderPopup = () => {
       width: 300px;
       height: 450px;
       border: none;
+      border-radius: 8px;
       z-index: 999999;
       box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
       display: block;
@@ -25,7 +26,6 @@ const renderPopup = () => {
 const closePopup = () => {
   const popup = document.querySelector("iframe");
   if (popup) {
-    popup.style.display = "none";
     popup.remove();
   }
 };
@@ -45,8 +45,8 @@ const startInactivityTimer = (popup) => {
     clearTimeout(inactivityTimeout);
     inactivityTimeout = setTimeout(() => {
       hidePopup();
-      reappearTimeout = setTimeout(renderPopup, 10 * 1000);
-    }, 5 * 1000); // 1 minute
+      reappearTimeout = setTimeout(renderPopup, 5 * 60 * 1000);
+    }, 60 * 1000); // 1 minute
   };
 
   // Listen for any user interaction with the popup
@@ -66,9 +66,11 @@ const startInactivityTimer = (popup) => {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action == "render") {
+    console.log("rendering popup");
     sendResponse({ action: "got it boss" });
     renderPopup();
   } else if (request.action == "closePopup") {
+    console.log("closing popup");
     sendResponse({ action: "got it boss" });
     closePopup();
   }

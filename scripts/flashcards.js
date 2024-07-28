@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     const savedGeneratingState = await loadState("generating");
-    if (savedGeneratingState && popupRendered) window.close();
     if (savedGeneratingState) {
       const savedQuestions = await loadState("questions");
       if (savedQuestions) {
@@ -157,7 +156,6 @@ async function renderFlashcards() {
     if (resposne) {
       await save(true, "popup-rendered");
     }
-    window.close();
   }
   updateNavigation();
 }
