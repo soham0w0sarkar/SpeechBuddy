@@ -12,11 +12,8 @@ let session;
 let tailoredQuestions = true;
 let currentTab = "";
 let intervalId;
-let popupRendered = false;
 
 document.addEventListener("DOMContentLoaded", async function () {
-  popupRendered = (await loadState("popup-rendered")) || false;
-
   firebase.auth().onAuthStateChanged(async function (user) {
     if (user) {
       uid = user.uid;
@@ -37,13 +34,12 @@ document.addEventListener("DOMContentLoaded", async function () {
       await save(false, "generating");
       await clearStorage(["questions", "params", "popup-rendered"]);
 
-      if (popupRendered) {
-        const tab = await chrome.tabs.query({
-          active: true,
-          currentWindow: true,
-        });
-        await chrome.tabs.sendMessage(tab[0].id, { action: "closePopup" });
-      }
+      const tab = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      await chrome.tabs.sendMessage(tab[0].id, { action: "closePopup" });
+
       navigateTo("home.html");
     });
 
@@ -118,46 +114,47 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function renderFlashcards() {
-  flashcardContainer.innerHTML = "";
+  try {
+    flashcardContainer.innerHTML = "";
 
-  const question = Object.keys(questions)[currentIndex];
-  const answer = questions[question];
+    const question = Object.keys(questions)[currentIndex];
+    const answer = questions[question];
 
-  const card = document.createElement("div");
-  card.classList.add("card");
-  card.classList.add("current");
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.classList.add("current");
 
-  const cardContent = document.createElement("div");
-  cardContent.classList.add("card-content");
+    const cardContent = document.createElement("div");
+    cardContent.classList.add("card-content");
 
-  const questionElement = document.createElement("h2");
-  questionElement.textContent = question;
+    const questionElement = document.createElement("h2");
+    questionElement.textContent = question;
 
-  const answerElement = document.createElement("p");
-  answerElement.textContent = answer;
-  answerElement.classList.add("answer");
+    const answerElement = document.createElement("p");
+    answerElement.textContent = answer;
+    answerElement.classList.add("answer");
 
-  cardContent.appendChild(questionElement);
-  cardContent.appendChild(answerElement);
-  card.appendChild(cardContent);
-  flashcardContainer.appendChild(card);
+    cardContent.appendChild(questionElement);
+    cardContent.appendChild(answerElement);
+    card.appendChild(cardContent);
+    flashcardContainer.appendChild(card);
 
-  card.addEventListener("click", () => {
-    answerElement.classList.toggle("show");
-    questionElement.classList.toggle("hide");
-    card.classList.toggle("show-answer");
-  });
+    card.addEventListener("click", () => {
+      answerElement.classList.toggle("show");
+      questionElement.classList.toggle("hide");
+      card.classList.toggle("show-answer");
+    });
 
-  if (!popupRendered) {
     const tab = await chrome.tabs.query({ active: true, currentWindow: true });
-    const resposne = await chrome.tabs.sendMessage(tab[0].id, {
+    await chrome.tabs.sendMessage(tab[0].id, {
       action: "render",
     });
-    if (resposne) {
-      await save(true, "popup-rendered");
-    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    updateNavigation();
+    window.close();
   }
-  updateNavigation();
 }
 
 function updateNavigation() {
