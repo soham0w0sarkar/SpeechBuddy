@@ -9,161 +9,206 @@ let isTailoredQuestions = true;
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
+      const query = new URLSearchParams(window.location.search);
+
+      let pillar,
+        goal,
+        gradeLevel,
+        isSubscribed = false;
+
+      if (query.get("from") === "buddy") {
+        pillar = query.get("pillar");
+        goal = query.get("goal");
+        gradeLevel = query.get("gradeLevel");
+        isSubscribed = true;
+      } else {
+        isSubscribed = false;
+      }
+
       const openDashboardButton = document.getElementById("dashboard-button");
       const logoutButton = document.getElementById("logout-button");
-      let cookie = getUserFromCookie();
-      while (!cookie) {
-        if (!cookie) {
-          await fetchUserAndCheckSubscription();
-        }
-        cookie = getUserFromCookie();
-      }
-      openDashboardButton.addEventListener("click", async () => {
-        await openDashboard();
-      });
-      logoutButton.addEventListener("click", signout);
 
-      const tailoredQuestions = document.getElementById("tailoredQuestions");
-      const tailoredQuestionsLabel = document.getElementById(
-        "tailoredQuestionsLabel",
+      await fetchUserAndCheckSubscription(user.uid);
+
+      setupEventListeners(openDashboardButton, logoutButton);
+      setupGradePillarGoalSelection();
+
+      toggleTailoredQuestions(isSubscribed);
+
+      if (gradeLevel) {
+        selectedGradeLevel = gradeLevel;
+        document.getElementById("gradeLevel").value = gradeLevel;
+        populateDropdown(document.getElementById("pillar"), pillarOptions);
+      }
+      if (pillar) {
+        selectedPillar = pillar;
+        document.getElementById("pillar").value = pillar;
+        populateDropdown(
+          document.getElementById("goal"),
+          goalOptionsMap[pillar] || [],
+        );
+      }
+      if (goal) {
+        selectedGoal = goal;
+        document.getElementById("goal").value = goal;
+      }
+
+      renderAdditionalOptions();
+      document.getElementById("continueBtn").disabled = !(
+        selectedGradeLevel &&
+        selectedPillar &&
+        selectedGoal
       );
-      const isSubscribed = (cookie.subscribed || false).toString() === "true";
-      if (isSubscribed) {
-        tailoredQuestions.classList.remove("hidden");
-        tailoredQuestionsLabel.classList.remove("hidden");
-      } else {
-        tailoredQuestions.classList.add("hidden");
-        tailoredQuestionsLabel.classList.add("hidden");
-      }
-      tailoredQuestions.addEventListener("change", function () {
-        isTailoredQuestions = tailoredQuestions.value === "yes";
-      });
-      const gradeLevelSelect = document.getElementById("gradeLevel");
-      const pillarSelect = document.getElementById("pillar");
-      const goalSelect = document.getElementById("goal");
-      const continueBtn = document.getElementById("continueBtn");
-
-      gradeLevelOptions.forEach((option) => {
-        let opt = document.createElement("option");
-        opt.value = option;
-        opt.textContent = option;
-        gradeLevelSelect.appendChild(opt);
-      });
-      gradeLevelSelect.addEventListener("change", function () {
-        selectedGradeLevel = gradeLevelSelect.value;
-        const options = pillarOptions;
-        populateDropdown(pillarSelect, options);
-      });
-      pillarSelect.addEventListener("change", function () {
-        selectedPillar = pillarSelect.value;
-        const options = goalOptionsMap[selectedPillar] || [];
-
-        populateDropdown(goalSelect, options);
-      });
-      goalSelect.addEventListener("change", function () {
-        selectedGoal = goalSelect.value;
-      });
-      [gradeLevelSelect, pillarSelect, goalSelect].forEach((select) => {
-        select.addEventListener("change", function () {
-          renderAdditionalOptions();
-          continueBtn.disabled = !(
-            selectedGradeLevel &&
-            selectedPillar &&
-            selectedGoal
-          );
-        });
-      });
-
-      continueBtn.addEventListener("click", onContinue);
     }
   });
 });
 
-function renderAdditionalOptions() {
-  const selectedGoal = document.getElementById("goal").value;
-  const selectedPillar = document.getElementById("pillar").value;
+const setupEventListeners = (openDashboardButton, logoutButton) => {
+  openDashboardButton.addEventListener("click", async () => {
+    await openDashboard();
+  });
+  logoutButton.addEventListener("click", signout);
+
+  const tailoredQuestions = document.getElementById("tailoredQuestions");
+  tailoredQuestions.addEventListener("change", () => {
+    isTailoredQuestions = tailoredQuestions.value === "yes";
+  });
+
+  const continueBtn = document.getElementById("continueBtn");
+  continueBtn.addEventListener("click", onContinue);
+};
+
+const setupGradePillarGoalSelection = () => {
+  const gradeLevelSelect = document.getElementById("gradeLevel");
+  const pillarSelect = document.getElementById("pillar");
+  const goalSelect = document.getElementById("goal");
+
+  populateDropdown(gradeLevelSelect, gradeLevelOptions);
+
+  gradeLevelSelect.addEventListener("change", () => {
+    selectedGradeLevel = gradeLevelSelect.value;
+    populateDropdown(pillarSelect, pillarOptions);
+  });
+
+  pillarSelect.addEventListener("change", () => {
+    selectedPillar = pillarSelect.value;
+    populateDropdown(goalSelect, goalOptionsMap[selectedPillar] || []);
+  });
+
+  goalSelect.addEventListener("change", () => {
+    selectedGoal = goalSelect.value;
+  });
+
+  [gradeLevelSelect, pillarSelect, goalSelect].forEach((select) => {
+    select.addEventListener("change", () => {
+      renderAdditionalOptions();
+      document.getElementById("continueBtn").disabled = !(
+        selectedGradeLevel &&
+        selectedPillar &&
+        selectedGoal
+      );
+    });
+  });
+};
+
+const toggleTailoredQuestions = (isSubscribed) => {
+  const tailoredQuestions = document.getElementById("tailoredQuestions");
+  const tailoredQuestionsLabel = document.getElementById(
+    "tailoredQuestionsLabel",
+  );
+
+  if (isSubscribed) {
+    tailoredQuestions.classList.remove("hidden");
+    tailoredQuestionsLabel.classList.remove("hidden");
+  } else {
+    tailoredQuestions.classList.add("hidden");
+    tailoredQuestionsLabel.classList.add("hidden");
+  }
+};
+
+const renderAdditionalOptions = () => {
   const additionalFieldsContainer = document.getElementById("additionalFields");
   additionalFieldsContainer.innerHTML = "";
-  if (selectedPillar === "Articulation" && selectedGoal) {
-    if (selectedGoal === "Consonant Clusters") {
-      // Render multi-select checkboxes
-      const checkboxes = multiSelectOptionsMap["consonant_clusters"].map(
-        (option) => {
-          return `
-                <span class="checkbox">
-                  <input type="checkbox" id="${option}" name="consonantClusters" value="${option}">
-                        <label for="${option}">${option}</label></span>`;
-        },
-      );
-      additionalFieldsContainer.innerHTML = checkboxes.join("");
-    } else if (selectedGoal === "Letter Sounds") {
-      // Render dropdown/select field
-      const selectField = `<label for="letterSound">Select Sound:</label>
-                                 <select id="letterSound" name="letterSound">
-                                     <option value="">Select Sound</option>
-                                     ${multiSelectOptionsMap["letter"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                 </select>`;
-      additionalFieldsContainer.innerHTML = selectField;
-    }
 
-    // Render common fields for Articulation
-    const positionDropdown = `<label for="position">Select Position:</label>
-                                  <select id="position" name="position">
-                                      <option value="">Select Position</option>
-                                      ${optionsMap["position"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                  </select>`;
-    additionalFieldsContainer.innerHTML += positionDropdown;
+  const commonFields = renderCommonFields(selectedPillar, selectedGoal);
+  const specificFields = renderSpecificFields(selectedPillar, selectedGoal);
 
-    const levelDropdown = `<label for="level">Select Level:</label>
-                               <select id="level" name="level">
-                                   <option value="">Select Level</option>
-                                   ${optionsMap["word_sentence"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                               </select>`;
-    additionalFieldsContainer.innerHTML += levelDropdown;
-  } else if (selectedPillar === "Expressive" && selectedGoal) {
-    if (selectedGoal === "Labeling") {
-      // Render dropdown/select field
-      const labelingTypeDropdown = `<label for="labelingType">Labeling Type:</label>
-                                          <select id="labelingType" name="labelingType">
-                                              <option value="">Select Labeling Type</option>
-                                              ${optionsMap["labeling"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                          </select>`;
-      additionalFieldsContainer.innerHTML = labelingTypeDropdown;
+  additionalFieldsContainer.innerHTML = commonFields + specificFields;
+};
 
-      // Render additional dropdown if needed
-      const activityDropdown = `<label for="activity">Select Activity:</label>
-                                     <select id="activity" name="activity">
-                                         <option value="">Select Activity</option>
-                                         ${optionsMap["activity"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                     </select>`;
-      additionalFieldsContainer.innerHTML += activityDropdown;
-    } else if (selectedGoal === "Sequence") {
-      // Render dropdown/select field
-      const sequenceTypeDropdown = `<label for="sequenceType">Sequence Type:</label>
-                                         <select id="sequenceType" name="sequenceType">
-                                             <option value="">Select Sequence Type</option>
-                                             ${optionsMap["sequence"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                         </select>`;
-      additionalFieldsContainer.innerHTML = sequenceTypeDropdown;
+const renderCommonFields = (pillar, goal) => {
+  let fields = "";
+  if (pillar === "Articulation") {
+    fields = `
+      <label for="position">Select Position:</label>
+      <select id="position" name="position">
+        <option value="">Select Position</option>
+        ${optionsMap["position"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+      </select>
+      <label for="level">Select Level:</label>
+      <select id="level" name="level">
+        <option value="">Select Level</option>
+        ${optionsMap["word_sentence"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+      </select>
+    `;
+  }
+  return fields;
+};
 
-      // Render additional dropdown if needed
-      const stepsDropdown = `<label for="steps">Number of Steps:</label>
-                                  <select id="steps" name="steps">
-                                      <option value="">Select Number of Steps</option>
-                                      ${optionsMap["events"].map((option) => `<option value="${option}">${option}</option>`).join("")}
-                                  </select>`;
-      additionalFieldsContainer.innerHTML += stepsDropdown;
+const renderSpecificFields = (pillar, goal) => {
+  let fields = "";
+  if (pillar === "Articulation" && goal === "Consonant Clusters") {
+    fields = multiSelectOptionsMap["consonant_clusters"]
+      .map(
+        (option) => `
+      <span class="checkbox">
+        <input type="checkbox" id="${option}" name="consonantClusters" value="${option}">
+        <label for="${option}">${option}</label>
+      </span>
+    `,
+      )
+      .join("");
+  } else if (pillar === "Articulation" && goal === "Letter Sounds") {
+    fields = `
+      <label for="letterSound">Select Sound:</label>
+      <select id="letterSound" name="letterSound">
+        <option value="">Select Sound</option>
+        ${multiSelectOptionsMap["letter"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+      </select>
+    `;
+  } else if (pillar === "Expressive") {
+    if (goal === "Labeling") {
+      fields = `
+        <label for="labelingType">Labeling Type:</label>
+        <select id="labelingType" name="labelingType">
+          <option value="">Select Labeling Type</option>
+          ${optionsMap["labeling"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+        </select>
+        <label for="activity">Select Activity:</label>
+        <select id="activity" name="activity">
+          <option value="">Select Activity</option>
+          ${optionsMap["activity"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+        </select>
+      `;
+    } else if (goal === "Sequence") {
+      fields = `
+        <label for="sequenceType">Sequence Type:</label>
+        <select id="sequenceType" name="sequenceType">
+          <option value="">Select Sequence Type</option>
+          ${optionsMap["sequence"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+        </select>
+        <label for="steps">Number of Steps:</label>
+        <select id="steps" name="steps">
+          <option value="">Select Number of Steps</option>
+          ${optionsMap["events"].map((option) => `<option value="${option}">${option}</option>`).join("")}
+        </select>
+      `;
     }
   }
-  const continueBtn = document.getElementById("continueBtn");
-  continueBtn.disabled = !(
-    selectedGradeLevel &&
-    selectedPillar &&
-    selectedGoal
-  );
-}
+  return fields;
+};
 
-function onContinue() {
+const onContinue = () => {
   const formData = {
     gradeLevel: selectedGradeLevel,
     pillar: selectedPillar,
@@ -215,19 +260,19 @@ function onContinue() {
   params += `&tailoredQuestions=${isTailoredQuestions.toString()}`;
   const url = `flashcards.html?${params}`;
   window.location.href = url;
-}
+};
 
-function populateDropdown(selectElement, options) {
-  selectElement.innerHTML = '<option value="">Select</option>'; // Clear previous options
+const populateDropdown = (selectElement, options) => {
+  selectElement.innerHTML = '<option value="">Select</option>';
   options.forEach((option) => {
-    let opt = document.createElement("option");
+    const opt = document.createElement("option");
     opt.value = option;
     opt.textContent = option;
     selectElement.appendChild(opt);
   });
-}
+};
 
-function signout() {
+const signout = () => {
   showLoader();
   deleteUserCookie();
   firebase
@@ -242,260 +287,104 @@ function signout() {
       console.error("Error signing out:", error);
       hideLoader();
     });
-}
-async function fetchUserAndCheckSubscription() {
+};
+
+const fetchUserAndCheckSubscription = async (uid) => {
   try {
     showLoader();
-    const user = firebase.auth().currentUser;
-    const uid = user.uid;
-    const email = user.email;
-    if (!uid || !email) {
-      throw new Error("User not logged in");
-      return;
-    }
     const firebaseDoc = await fetchFirebaseData(uid);
     if (!firebaseDoc) {
       throw new Error("Error fetching user data from Firebase");
     }
+
     const subscribed = await isSubscribed(firebaseDoc.customerId);
     saveUserToCookie({
-      email: email,
+      email: firebaseDoc.email,
       subscribed: subscribed,
       uid: uid,
       customerId: firebaseDoc.customerId,
     });
+
     hideLoader();
+    return true;
   } catch (error) {
-    console.error("Error fetching user and checking subscription:", error);
-    navigateTo("login.html");
-  }
-}
-
-async function openDashboard() {
-  showLoader();
-  const currentUser = firebase.auth().currentUser;
-  const token = await fetchToken(currentUser.uid);
-  if (!token) {
+    console.error("Error fetching user data:", error);
     hideLoader();
-    console.error("Token not found");
-    return;
+    throw error;
   }
-  hideLoader();
-  const url = new URL("https://www.example.com");
-  url.searchParams.append("token", token);
-  window.open(url.href, "_blank");
-
-  window.postMessage({ type: "AUTH_TOKEN", token }, "*");
-}
-
-async function fetchToken(uid) {
-  try {
-    const response = await fetch(
-      "https://us-central1-speechbuddy-30390.cloudfunctions.net/createToken",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          uid: uid,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const data = await response.json();
-    return data.token;
-  } catch (error) {
-    console.error("There was a problem with the POST request:", error);
-    return null;
-  }
-}
+};
 
 const gradeLevelOptions = [
   "Preschool",
+  "Pre-Kindergarten",
   "Kindergarten",
   "1st Grade",
   "2nd Grade",
   "3rd Grade",
-  "4th Grade",
-  "5th Grade",
-  "6th Grade",
-  "7th Grade",
-  "8th Grade",
-  "9th Grade",
-  "10th Grade",
-  "11th Grade",
-  "12th Grade",
 ];
-
+const pillarOptions = ["Articulation", "Expressive", "Receptive"];
 const goalOptionsMap = {
   Articulation: ["Consonant Clusters", "Letter Sounds"],
-  Expressive: [
-    "Labeling",
-    "Sequence",
-    "Definitions",
-    "Morphology",
-    "Syntax",
-    "Narrative",
-    "Figurative Language",
-  ],
-  Phonology: [
-    "Multisyllabic Words",
-    "Assimilation",
-    "Minimal Pairs",
-    "Substitution",
-  ],
-  Receptive: ["Categories", "Vocabulary", "Following Directions"],
-  Pragmatic: ["Conversation"],
-  Fluency: ["Desensitization", "Techniques"],
+  Expressive: ["Labeling", "Sequence"],
+  Receptive: ["Commands", "Questions"],
 };
-
-const pillarOptions = [
-  "Articulation",
-  "Expressive",
-  "Phonology",
-  "Receptive",
-  "Pragmatic",
-  "Fluency",
-];
 
 const optionsMap = {
   position: ["Initial", "Medial", "Final"],
-  word_sentence: ["Isolation", "Word", "Carrier Phrase", "Sentence"],
-  assimilation: [
-    "Labial",
-    "Velar",
-    "Nasal",
-    "Denasalization",
-    "Alveolar",
-    "Devoicing",
-    "Reduplication",
-    "Consonant Deletion",
-  ],
-  pair_discrim: [
-    "Voicing",
-    "Place",
-    "Manner",
-    "Stops vs Continuant",
-    "Front vs Back",
-    "High vs Low",
-    "Tense vs Lax",
-    "Nasal vs Oral",
-    "Liquid vs Glide",
-    "Consonant Clusters (Phonology)",
-  ],
-  desensitization: ["Bumpy vs Smooth", "Fast vs Slow"],
-  techniques: [
-    "Cancellation",
-    "Pull-out",
-    "Preparatory Set",
-    "Easy Onset",
-    "Light Contact",
-    "Slow Rate",
-  ],
-  slow_rate: ["Word", "Sentence", "Reading", "Conversation Topics"],
-  conversation: ["Ask Questions", "Conversation Topics", "Express Feelings"],
-  labeling: ["Nouns", "Colors", "Quantity"],
-  activity: ["Fill in the Blanks", "Create Sentences"],
-  sequence: ["Context", "Story", "Event"],
-  events: ["Three", "Four", "Five"],
-  definition: [
-    "Context",
-    "Multiple Meanings",
-    "Fill in the Blank",
-    "Multiple Choices",
-    "Create Sentences",
-  ],
-  marker: ["Verbs", "Plurals", "Possessive", "Pronouns", "Morphemes"],
-  verb: ["Tense", "Auxillary Verbs"],
-  tense: ["Past", "Present", "Future", "Progressive"],
-  aux: ["Regular", "Irregular"],
-  morpheme: ["Prefix", "Suffix"],
-  syntax: [
-    "Yes/No Questions",
-    "Wh- Questions",
-    "Prepositional Phrases",
-    "Synonyms and Antonyms",
-    "Adjectives",
-    "Subject-Verb Agreement",
-    "Comparative",
-    "Conjunctions",
-  ],
-  wh: ["who", "what", "where", "when", "why", "how"],
-  conjunction: ["Coordinating", "Subordination"],
-  coordinating: ["For", "And", "Nor", "But", "Or", "Yet", "So"],
-  subordination: ["Although", "Because", "Since", "Unless", "While", "If"],
-  narrative: ["Story Elements", "Retelling"],
-  story_element: [
-    "Character",
-    "Setting",
-    "Problem",
-    "Solution",
-    "Main Idea",
-    "Supporting Details",
-    "Theory of Mind",
-    "Inferences",
-    "Predictions",
-  ],
-  retelling: ["Beginning", "Middle", "End"],
-  figurative: ["Idioms", "Similes", "Metaphors"],
-  figurative_activity: ["Meaning", "Fill in the Blanks", "Create Sentences"],
-  receptive: ["Function", "Parts", "Location", "Similarities", "Differences"],
-  receptive_activity: ["Describe", "Compare and Contrast", "List of 3"],
-  number_of_syllables: ["3+ Syllable", "5+ Syllable"],
-  deletion_type: ["Initial", "Medial", "Final", "Weak Syllable"],
-  substitution_type: [
-    "Fronting",
-    "Backing",
-    "Stopping",
-    "Gliding",
-    "Vowelization",
-  ],
-  word_type: ["Nouns", "Action Verbs", "Adjectives"],
-  vocabulary_activity: ["Fill in the blank", "Definitions", "Create sentences"],
-  steps: ["1-step", "2-step", "3-step"],
-  concept_type: [
-    "Spatial",
-    "Temporal",
-    "Quantity",
-    "Quality",
-    "Pronouns",
-    "Sequential",
-    "Passive Voice",
-    "Negatives",
-  ],
+  word_sentence: ["Word", "Sentence"],
+  labeling: ["Objects", "Pictures", "Actions"],
+  activity: ["Activity 1", "Activity 2"],
+  sequence: ["Activity 1", "Activity 2"],
+  events: ["Event 1", "Event 2"],
 };
 
 const multiSelectOptionsMap = {
-  consonant_clusters: ["vocalic r", "l", "s"],
+  consonant_clusters: [
+    "bl",
+    "br",
+    "cl",
+    "cr",
+    "dr",
+    "fl",
+    "fr",
+    "gl",
+    "gr",
+    "pl",
+    "pr",
+    "sl",
+    "sm",
+    "sn",
+    "sp",
+    "st",
+    "sw",
+    "tr",
+  ],
   letter: [
-    "p",
-    "m",
-    "h",
-    "w",
-    "n",
-    "b",
-    "d",
-    "j",
-    "y",
-    "t",
-    "k",
-    "g",
-    "ng",
-    "f",
-    "ch",
-    "r",
-    "l",
-    "v",
-    "th",
-    "th (theta)",
-    "z",
-    "s",
-    "sh",
-    "vocalic r",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
   ],
 };

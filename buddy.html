@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Buddy List</title>
+        <style>
+            .buddy-container {
+                width: 280px;
+                height: 300px;
+                background-color: white;
+                border: 1px solid #000;
+                padding: 10px;
+                box-sizing: border-box;
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: center;
+                overflow-y: auto;
+                position: relative;
+            }
+
+            .title {
+                position: absolute;
+                top: 10px;
+                width: 100%;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .buddy-button {
+                margin: 5px;
+                padding: 10px 20px;
+                background: none;
+                color: black;
+                border: 2px solid #007bff;
+                border-radius: 4px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+            }
+
+            .buddy-button svg {
+                margin-right: 8px;
+                fill: #007bff;
+            }
+
+            .add-button {
+                margin: 5px;
+                background: none;
+                border: 2px solid #007bff;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            /* Modal Background */
+            #addBuddyModal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1000; /* Sit on top */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+                transition: opacity 0.3s ease; /* Fade effect */
+            }
+
+            /* Modal Content */
+            .modal-content {
+                background-color: #fff;
+                margin: 5% auto; /* 15% from the top and centered */
+                padding: 10px;
+                border-radius: 8px;
+                width: 80%; /* Could be more or less, depending on screen size */
+                max-width: 500px; /* Maximum width */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: transform 0.3s ease; /* Smooth scale effect */
+            }
+
+            /* Modal Header */
+            .modal-header {
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+            }
+
+            /* Close Button */
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: color 0.2s ease-in-out;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+            }
+
+            /* Modal Body */
+            .modal-body {
+                padding: 10px 0;
+            }
+
+            .modal-body label {
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            .modal-body select {
+                width: 100%;
+                padding: 10px;
+                border-radius: 2px;
+                border: 1px solid rgba(0, 0, 0, 0.3);
+            }
+
+            /* Modal Footer */
+            .modal-footer {
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+                text-align: right;
+            }
+
+            .modal-footer button {
+                background-color: #195c56;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.2s ease-in-out;
+            }
+
+            .modal-footer button:hover {
+                background-color: #21776e;
+            }
+
+            .modal-footer .cancel-btn {
+                background-color: transparent;
+                color: #195c56;
+                border: none;
+                font-size: 16px;
+                cursor: pointer;
+                transition: color 0.2s ease-in-out;
+            }
+
+            .modal-footer .cancel-btn:hover {
+                color: #21776e;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="buddy-container" id="buddy-container">
+            <div class="title">Select Buddy</div>
+            <button class="add-button" id="add-button">+</button>
+            <div id="loader" class="hidden"></div>
+        </div>
+        <!-- Add Buddy Modal -->
+        <div id="addBuddyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">&times;</span>
+                    <h2>Add New Buddy</h2>
+                </div>
+                <div class="modal-body">
+                    <label for="newBuddyGradeLevel">Grade Level:</label>
+                    <select id="newBuddyGradeLevel">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+
+                    <label for="newBuddyPillar">Pillar:</label>
+                    <select id="newBuddyPillar">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+
+                    <label for="newBuddyGoal">Goal:</label>
+                    <select id="newBuddyGoal">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveBuddy">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-storage-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="scripts/buddy.js"></script>
+    </body>
+</html>
