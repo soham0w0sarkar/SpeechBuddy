@@ -13,18 +13,20 @@ let mediaRecorder,
   intervalId;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  hideContent();
-  await loadState();
-  attachEventListeners({
-    nextBtn: nextFlashcard,
-    previousBtn: previousFlashcard,
-    "record-button": startRecording,
-    "stop-button": stopRecording,
-    generateButton: fetchFlashcards,
-    cut: sendMessage,
+  firebase.auth().onAuthStateChanged(async (currentUser) => {
+    hideContent();
+    await loadState();
+    attachEventListeners({
+      nextBtn: nextFlashcard,
+      previousBtn: previousFlashcard,
+      "record-button": startRecording,
+      "stop-button": stopRecording,
+      generateButton: fetchFlashcards,
+      cut: sendMessage,
+    });
+    await fetchFlashcards();
+    showContent();
   });
-  await fetchFlashcards();
-  showContent();
 });
 
 // Load state from Chrome storage
@@ -122,7 +124,7 @@ function stopRecording() {
 // Upload audio file to Firebase
 async function uploadAudio(audioBlob) {
   try {
-    toggleButtons(false);
+    toggleButtons(true);
     const audioFileName = `${user}_${session}_${currentIndex}.wav`;
     const audioFileRef = firebase.storage().ref().child(audioFileName);
     await audioFileRef.put(audioBlob);
@@ -132,7 +134,7 @@ async function uploadAudio(audioBlob) {
   } catch (error) {
     console.error("Error uploading audio:", error);
   } finally {
-    toggleButtons(true);
+    toggleButtons(false);
     hideLoader();
   }
 }
