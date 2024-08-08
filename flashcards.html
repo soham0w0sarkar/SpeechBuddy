@@ -5,30 +5,53 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Flashcards</title>
         <style>
+            :root {
+                --primary-color: #2196f3;
+                --secondary-color: #fece00;
+                --highlight-color: orange;
+                --button-hover-color: #195c56;
+                --background-color: #f0f0f0;
+                --text-color: white;
+                --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                --font-family: Arial, sans-serif;
+                --transition-speed: 0.2s;
+            }
+
             * {
-                transition: all 0.2s ease-in-out;
+                transition: all var(--transition-speed) ease-in-out;
             }
 
             body {
-                font-family: Arial, sans-serif;
+                font-family: var(--font-family);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                height: fit-content;
+                height: 100vh;
                 width: 100vw;
                 margin: 0;
-                background-color: #f0f0f0;
+                background-color: var(--background-color);
             }
-            /* CSS styles go here */
+
+            header {
+                text-align: center;
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
             .card {
                 width: 80%;
-                background-color: #2196f3;
-                color: white;
+                background-color: var(--primary-color);
+                color: var(--text-color);
                 margin: 20px;
                 padding: 20px;
                 border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                box-shadow: var(--box-shadow);
                 transition: transform 0.3s ease-in-out;
             }
 
@@ -41,17 +64,17 @@
             }
 
             .card.show-answer {
-                background-color: orange;
+                background-color: var(--highlight-color);
             }
 
             .card-content .answer {
                 display: none;
-                color: white; /* Change text color of answer */
-                font-size: 20px; /* Increase font size */
+                color: var(--text-color);
+                font-size: 1.25rem;
             }
 
             .card-content .hide {
-                display: none; /* Hide question when showing answer */
+                display: none;
             }
 
             .card.show-answer .card-content .answer.show {
@@ -63,42 +86,41 @@
                 justify-content: center;
                 align-items: center;
                 margin-top: 20px;
-                margin-bottom: 20px;
             }
 
             .navigation button {
-                background-color: #197700;
-                color: white;
+                background-color: var(--button-hover-color);
+                color: var(--text-color);
                 border: none;
                 padding: 10px 20px;
                 margin: 0 10px;
                 cursor: pointer;
                 border-radius: 5px;
-                font-size: 16px;
+                font-size: 1rem;
             }
 
             .navigation button:hover {
-                background-color: #195c56;
+                background-color: var(--primary-color);
             }
 
             .record {
-                background-color: #fece00;
-                color: white;
+                background-color: var(--secondary-color);
+                color: var(--text-color);
                 border: none;
                 padding: 10px 20px;
                 cursor: pointer;
                 border-radius: 5px;
-                font-size: 16px;
+                font-size: 1rem;
                 margin-top: 20px;
             }
 
             .record:hover {
-                background-color: #21776e;
+                background-color: var(--button-hover-color);
             }
 
             #timer {
                 font-weight: semibold;
-                font-size: 20px;
+                font-size: 1.25rem;
             }
 
             #flashcardContainer {
@@ -114,18 +136,18 @@
             }
 
             footer button {
-                background-color: #195c56;
-                color: white;
+                background-color: var(--button-hover-color);
+                color: var(--text-color);
                 border: none;
                 padding: 10px 20px;
                 margin-bottom: 10px;
                 cursor: pointer;
                 border-radius: 5px;
-                font-size: 16px;
+                font-size: 1rem;
             }
 
             footer button:hover {
-                background-color: #21776e;
+                background-color: var(--primary-color);
             }
 
             button:disabled {
@@ -136,6 +158,7 @@
             .hidden {
                 display: none;
             }
+
             #loader {
                 position: fixed;
                 top: 50%;
@@ -148,7 +171,33 @@
                 height: 20px;
                 padding: 10px;
                 animation: spin 1s linear infinite;
-                z-index: 1000; /* Add this line */
+                z-index: 1000;
+            }
+
+            .cut {
+                position: fixed;
+                top: 0%;
+                right: 0%;
+                border: none;
+                cursor: pointer;
+            }
+
+            .cut svg {
+                width: 24px;
+                height: 24px;
+                fill: var(--button-hover-color);
+            }
+
+            .cut:hover svg {
+                fill: var(--highlight-color);
+            }
+
+            .cut:disabled {
+                background: none;
+            }
+
+            .cut:disabled svg {
+                fill: #ccc;
             }
 
             @keyframes spin {
@@ -165,32 +214,47 @@
         <header>
             <h1>Flashcards</h1>
         </header>
-
+        <button class="cut" id="cut" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.88 4.89a1 1 0 1 0 1.42 1.41L12 13.41l4.89 4.88a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.41z"
+                />
+            </svg>
+        </button>
         <main id="flashcardContainer">
             <!-- Flashcard content will be dynamically added here -->
         </main>
         <div class="navigation">
-            <button id="previousBtn">Previous</button>
+            <button id="previousBtn" aria-label="Previous Card">
+                Previous
+            </button>
             <span id="currentIndex"> - </span>
-            <button id="nextBtn">Next</button>
+            <button id="nextBtn" aria-label="Next Card">Next</button>
         </div>
-        <button class="record" id="record-button">Record Audio</button>
+        <button class="record" id="record-button" aria-label="Record Audio">
+            Record Audio
+        </button>
         <span id="timer" class="hidden">00:00</span>
-        <button class="record" id="stop-button" style="display: none">
+        <button
+            class="record"
+            id="stop-button"
+            style="display: none"
+            aria-label="Stop Recording"
+        >
             Stop Recording
         </button>
         <footer>
-            <button id="generateButton">Generate</button>
-            <button id="backButton">Back</button>
+            <button id="generateButton" aria-label="Generate Cards">
+                Generate
+            </button>
+            <button id="backButton" aria-label="Back to Home">Back</button>
         </footer>
         <div id="loader"></div>
+        <noscript>
+            <p>JavaScript is required to view this content.</p>
+        </noscript>
         <script src="/scripts/loader.js"></script>
         <script src="/scripts/navigation.js"></script>
         <script src="/scripts/flashcards.js"></script>
-        <script src="firebase-app-compat.js"></script>
-        <script src="firebase-auth-compat.js"></script>
-        <script src="firebase-storage-compat.js"></script>
-        <script src="scripts/firebease-config.js"></script>
-        <script src="firebase-firestore-compat.js"></script>
     </body>
 </html>

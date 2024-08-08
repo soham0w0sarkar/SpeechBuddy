@@ -208,7 +208,7 @@ const renderSpecificFields = (pillar, goal) => {
   return fields;
 };
 
-const onContinue = () => {
+const onContinue = async () => {
   const formData = {
     gradeLevel: selectedGradeLevel,
     pillar: selectedPillar,
@@ -258,8 +258,8 @@ const onContinue = () => {
 
   params += `&subscribedUser=${isSubscribed.toString()}`;
   params += `&tailoredQuestions=${isTailoredQuestions.toString()}`;
-  const url = `flashcards.html?${params}`;
-  window.location.href = url;
+
+  navigateTo("renderPopup.html?" + params);
 };
 
 const populateDropdown = (selectElement, options) => {
