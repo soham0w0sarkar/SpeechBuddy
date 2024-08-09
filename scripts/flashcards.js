@@ -13,8 +13,10 @@ let mediaRecorder,
   intervalId;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  hideContent();
   firebase.auth().onAuthStateChanged(async (currentUser) => {
-    hideContent();
+    if (!currentUser) sendMessage();
+
     await loadState();
     attachEventListeners({
       nextBtn: nextFlashcard,

@@ -7,10 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const logoutButton = document.querySelector(".logout-button");
+    logoutButton.addEventListener("click", signout);
+
     showLoader();
     buddyList = await getBuddyList(user);
     await renderBuddyList(buddyList);
-    hideLoader();
 
     const buddyContainer = document.querySelector(".buddy-container");
     buddyContainer.addEventListener("click", (event) => {
@@ -30,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const getBuddyList = async (user) => {
   try {
     const data = await fetchFirebaseData(user.uid);
+    console.log(data);
     return data.buddyList || [];
   } catch (error) {
     console.error("Error fetching buddy list:", error);
@@ -43,6 +46,7 @@ const renderBuddyList = async (buddyList) => {
     const buddyButton = createBuddyButton(buddy, index + 1);
     buddyContainer.insertBefore(buddyButton, document.querySelector("#loader"));
   });
+  hideLoader();
 };
 
 const createBuddyButton = (buddy, index) => {
@@ -53,7 +57,24 @@ const createBuddyButton = (buddy, index) => {
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
     </svg>
-    Buddy ${index}
+    ${buddy.first_name} ${buddy.last_name[0]}
   `;
   return buddyButton;
+};
+
+const signout = () => {
+  showLoader();
+  deleteUserCookie();
+  firebase
+    .auth()
+    .signOut()
+    .then(() => {
+      console.log("User signed out successfully");
+      hideLoader();
+      navigateTo("login.html");
+    })
+    .catch((error) => {
+      console.error("Error signing out:", error);
+      hideLoader();
+    });
 };

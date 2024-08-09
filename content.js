@@ -1,12 +1,10 @@
 const renderPopup = async () => {
-  // Debounce mechanism to prevent multiple calls
   if (window.renderingPopup) {
     console.log("renderPopup call is already in progress.");
     return;
   }
   window.renderingPopup = true;
 
-  // Check if the popup is already loaded
   if (window.popupLoaded) {
     console.log("Popup is already loaded.");
     window.renderingPopup = false;
@@ -21,11 +19,12 @@ const renderPopup = async () => {
     popup.style.cssText = `
       position: fixed;
       top: 20%;
-      right: 12%;
+      left: 70%;
       width: 300px;
       height: 450px;
       border: none;
       border-radius: 8px;
+      padding: 2px;
       z-index: 9999999;
       box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
       display: block;
@@ -33,20 +32,17 @@ const renderPopup = async () => {
       transition: opacity 0.5s ease;
       background-color: white;
       overflow: hidden;
+      cursor: move;
     `;
 
     document.body.appendChild(popup);
-
-    // Initialize state
     popup.dataset.bookmarkMode = "false";
-
-    // Set the flag indicating the popup is loaded
     window.popupLoaded = true;
+    makeDraggable(popup);
 
-    // Fade in the popup
     setTimeout(() => {
       popup.style.opacity = "1";
-    }, 100); // Delay slightly to allow the transition to take effect
+    }, 100);
 
     startInactivityTimer(popup);
 
@@ -60,7 +56,6 @@ const renderPopup = async () => {
 };
 
 const createBookmarkElement = () => {
-  // Check if the bookmark element already exists
   if (document.querySelector(".bookmark-element")) {
     return;
   }
@@ -83,7 +78,6 @@ const createBookmarkElement = () => {
     cursor: pointer;
   `;
 
-  // Add some content or icon to the bookmark element
   const bookmarkLabel = document.createElement("span");
   bookmarkLabel.textContent = "SB";
   bookmarkLabel.style.cssText = `
@@ -93,10 +87,8 @@ const createBookmarkElement = () => {
       font-weight: bold;
     `;
 
-  // Append the span to the bookmark element
   bookmark.appendChild(bookmarkLabel);
 
-  // Add a hover event to toggle the popup visibility
   bookmark.addEventListener("mouseover", () => {
     togglePopupVisibility();
   });
@@ -107,16 +99,12 @@ const createBookmarkElement = () => {
 const hidePopup = () => {
   const popup = document.querySelector("iframe.flashcards-popup");
   if (popup) {
-    // Fade out the popup
     popup.style.opacity = "0";
-
-    // Hide the popup after the fade transition
     setTimeout(() => {
       popup.style.display = "none";
-      // Create and show the bookmark element
       createBookmarkElement();
       console.log("Popup hidden and bookmark element created");
-    }, 500); // Match the duration of the fade transition
+    }, 500);
   }
 };
 
@@ -126,21 +114,18 @@ const togglePopupVisibility = () => {
 
   if (popup) {
     if (popup.style.display === "none") {
-      // Show the popup and fade it in
       popup.style.display = "block";
-      // Trigger layout reflow
-      popup.offsetHeight; // Trigger a reflow to ensure the fade-in transition restarts
+      popup.offsetHeight;
       popup.style.opacity = "1";
       if (bookmark) bookmark.remove();
       console.log("Popup shown and bookmark element removed");
     } else {
-      // Fade out the popup first, then hide it
       popup.style.opacity = "0";
       setTimeout(() => {
         popup.style.display = "none";
         createBookmarkElement();
         console.log("Popup hidden and bookmark element shown");
-      }, 500); // Match the duration of the fade transition
+      }, 500);
     }
   }
 };
@@ -159,8 +144,8 @@ const startInactivityTimer = (popup) => {
           togglePopupVisibility();
         },
         5 * 60 * 1000,
-      ); // Reappear after 5 minutes
-    }, 10 * 1000); // 10 seconds for testing
+      );
+    }, 10 * 1000);
   };
 
   const handleUserInteraction = () => {
@@ -185,9 +170,38 @@ const closePopup = () => {
     bookmark.remove();
     console.log("Bookmark element removed");
   }
-
-  // Update the flag indicating the popup is not loaded
   window.popupLoaded = false;
+};
+
+const makeDraggable = (element) => {
+  console.log(element);
+  let isDragging = false;
+  let offsetX, offsetY;
+
+  const onMouseDown = (e) => {
+    console.log("onMouseDown");
+    isDragging = true;
+    offsetX = e.clientX - element.getBoundingClientRect().left;
+    offsetY = e.clientY - element.getBoundingClientRect().top;
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const onMouseMove = (e) => {
+    if (isDragging) {
+      element.style.left = `${e.clientX - offsetX}px`;
+      element.style.top = `${e.clientY - offsetY}px`;
+    }
+  };
+
+  const onMouseUp = () => {
+    isDragging = false;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
+
+  element.onmousedown = onMouseDown;
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
