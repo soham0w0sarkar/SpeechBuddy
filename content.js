@@ -1,91 +1,132 @@
 const renderPopup = async () => {
-  // Debounce mechanism to prevent multiple calls
   if (window.renderingPopup) {
     console.log("renderPopup call is already in progress.");
     return;
   }
   window.renderingPopup = true;
 
-  // Check if the popup is already loaded
-  chrome.storage.sync.get("popupLoaded", async (data) => {
-    if (data.popupLoaded) {
-      console.log("Popup is already loaded.");
-      window.renderingPopup = false;
-      return;
-    }
-
-    try {
-      const popup = document.createElement("iframe");
-      popup.classList.add("flashcards-popup");
-      popup.src = await chrome.runtime.getURL("flashcards.html");
-      console.log("Popup src: ", popup.src);
-
-      popup.style.cssText = `
-        position: fixed;
-        top: 0;
-        right: 12%;
-        width: 300px;
-        height: 450px;
-        border: none;
-        border-radius: 8px;
-        z-index: 999999;
-        box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
-        display: block;
-        transition: width 0.3s, height 0.3s;
-        background-color: white;
-      `;
-
-      document.body.appendChild(popup);
-      console.log("Popup appended to body: ", popup);
-
-      // Initialize state
-      popup.dataset.bookmarkMode = "false";
-
-      // Store the state indicating the popup is loaded
-      chrome.storage.sync.set({ popupLoaded: true }, () => {
-        console.log("Popup loaded state saved.");
-      });
-
-      startInactivityTimer(popup);
-    } catch (error) {
-      console.error("Error rendering popup: ", error);
-    } finally {
-      window.renderingPopup = false;
-    }
-  });
-};
-
-const closePopup = () => {
-  const popup = document.querySelector(".flashcards-popup");
-  if (popup) {
-    popup.remove();
-    console.log("Popup removed");
+  if (window.popupLoaded) {
+    console.log("Popup is already loaded.");
+    window.renderingPopup = false;
+    return;
   }
-  // Update the state indicating the popup is not loaded
-  chrome.storage.sync.set({ popupLoaded: false }, () => {
-    console.log("Popup loaded state updated to false.");
-  });
+
+  try {
+    const popup = document.createElement("iframe");
+    popup.classList.add("flashcards-popup");
+    popup.src = await chrome.runtime.getURL("flashcards.html");
+    popup.allow = "microphone";
+    popup.style.cssText = `
+      position: fixed;
+      top: 20%;
+      left: 70%;
+      width: 300px;
+      height: 450px;
+      border: none;
+      border-radius: 8px;
+      padding: 2px;
+      z-index: 9999999;
+      box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      background-color: white;
+      overflow: hidden;
+      cursor: move;
+    `;
+
+    document.body.appendChild(popup);
+    popup.dataset.bookmarkMode = "false";
+    window.popupLoaded = true;
+    makeDraggable(popup);
+
+    setTimeout(() => {
+      popup.style.opacity = "1";
+    }, 100);
+
+    startInactivityTimer(popup);
+
+    return true;
+  } catch (error) {
+    console.error("Error rendering popup: ", error);
+    return false;
+  } finally {
+    window.renderingPopup = false;
+  }
 };
 
-const hidePopup = async () => {
+const createBookmarkElement = () => {
+  if (document.querySelector(".bookmark-element")) {
+    return;
+  }
+
+  const bookmark = document.createElement("div");
+  bookmark.classList.add("bookmark-element");
+  bookmark.style.cssText = `
+    position: fixed;
+    top: calc(10% - 30px);
+    right: 0;
+    width: 80px;
+    height: 60px;
+    border-radius: 40% 0px 0px 40%;
+    z-index: 9999999;
+    background-color: grey;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  `;
+
+  const bookmarkLabel = document.createElement("span");
+  bookmarkLabel.textContent = "SB";
+  bookmarkLabel.style.cssText = `
+      display: block;
+      color: white;
+      font-size: 30px;
+      font-weight: bold;
+    `;
+
+  bookmark.appendChild(bookmarkLabel);
+
+  bookmark.addEventListener("mouseover", () => {
+    togglePopupVisibility();
+  });
+
+  document.body.appendChild(bookmark);
+};
+
+const hidePopup = () => {
   const popup = document.querySelector("iframe.flashcards-popup");
   if (popup) {
-    popup.style.width = "70px";
-    popup.style.height = "50px";
-    popup.style.top = "calc(10% - 30px)";
-    popup.style.right = "0";
-    popup.style.borderRadius = "50% 0px 0px 50%";
-    popup.style.boxShadow = "2px 0 10px rgba(0, 0, 0, 0.1)";
-    popup.style.backgroundColor = "black";
+    popup.style.opacity = "0";
+    setTimeout(() => {
+      popup.style.display = "none";
+      createBookmarkElement();
+      console.log("Popup hidden and bookmark element created");
+    }, 500);
+  }
+};
 
-    try {
-      popup.src = await chrome.runtime.getURL("bookmark.html");
-      popup.dataset.bookmarkMode = "true"; // Set the bookmark mode flag
-    } catch (error) {
-      console.error("Error fetching bookmark label: ", error);
+const togglePopupVisibility = () => {
+  const popup = document.querySelector("iframe.flashcards-popup");
+  const bookmark = document.querySelector(".bookmark-element");
+
+  if (popup) {
+    if (popup.style.display === "none") {
+      popup.style.display = "block";
+      popup.offsetHeight;
+      popup.style.opacity = "1";
+      if (bookmark) bookmark.remove();
+      console.log("Popup shown and bookmark element removed");
+    } else {
+      popup.style.opacity = "0";
+      setTimeout(() => {
+        popup.style.display = "none";
+        createBookmarkElement();
+        console.log("Popup hidden and bookmark element shown");
+      }, 500);
     }
-
-    console.log("Popup transformed to bookmark shape with SB label");
   }
 };
 
@@ -98,47 +139,74 @@ const startInactivityTimer = (popup) => {
     clearTimeout(reappearTimeout);
     inactivityTimeout = setTimeout(() => {
       hidePopup();
-      reappearTimeout = setTimeout(renderPopup, 5 * 60 * 1000);
-    }, 10 * 1000); // 10 seconds for testing
+      reappearTimeout = setTimeout(
+        () => {
+          togglePopupVisibility();
+        },
+        5 * 60 * 1000,
+      );
+    }, 10 * 1000);
   };
 
   const handleUserInteraction = () => {
     resetInactivityTimeout();
   };
 
-  const handleMouseOver = () => {
-    if (popup.dataset.bookmarkMode === "true") {
-      popup.style.width = "300px";
-      popup.style.height = "450px";
-      popup.style.top = "0";
-      popup.style.right = "12%";
-      popup.style.borderRadius = "8px";
-      popup.style.boxShadow = "-4px 0 10px rgba(0, 0, 0, 0.1)";
-      popup.style.backgroundColor = "white";
-
-      // Restore the src attribute to load the HTML content
-      popup.src = chrome.runtime.getURL("flashcards.html");
-
-      // Reset the bookmark mode flag
-      popup.dataset.bookmarkMode = "false";
-
-      console.log("Popup expanded to original size");
-    }
-  };
-
   ["mouseover", "mouseout", "click", "keydown"].forEach((event) => {
     popup.addEventListener(event, handleUserInteraction);
   });
 
-  popup.addEventListener("mouseover", handleMouseOver);
-
   resetInactivityTimeout();
+};
+
+const closePopup = () => {
+  const popup = document.querySelector(".flashcards-popup");
+  const bookmark = document.querySelector(".bookmark-element");
+  if (popup) {
+    popup.remove();
+    console.log("Popup removed");
+  }
+  if (bookmark) {
+    bookmark.remove();
+    console.log("Bookmark element removed");
+  }
+  window.popupLoaded = false;
+};
+
+const makeDraggable = (element) => {
+  console.log(element);
+  let isDragging = false;
+  let offsetX, offsetY;
+
+  const onMouseDown = (e) => {
+    console.log("onMouseDown");
+    isDragging = true;
+    offsetX = e.clientX - element.getBoundingClientRect().left;
+    offsetY = e.clientY - element.getBoundingClientRect().top;
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const onMouseMove = (e) => {
+    if (isDragging) {
+      element.style.left = `${e.clientX - offsetX}px`;
+      element.style.top = `${e.clientY - offsetY}px`;
+    }
+  };
+
+  const onMouseUp = () => {
+    isDragging = false;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
+
+  element.onmousedown = onMouseDown;
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "render") {
-    console.log("Rendering popup");
-    renderPopup();
+    if (renderPopup()) sendResponse({ message: "Rendering popup" });
   } else if (request.action === "closePopup") {
     console.log("Closing popup");
     closePopup();

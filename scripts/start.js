@@ -1,15 +1,13 @@
 async function start() {
-  const render = await chrome.storage.sync.get(["generating"]);
-
-  if (render["generating"]) {
-    navigateTo("../flashcards.html");
-    return;
-  }
-
-  firebase.auth().onAuthStateChanged((user) => {
+  firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-      if (window.location.pathname !== "/home.html") {
-        navigateTo("home.html");
+      const { customerId } = await fetchFirebaseData(user.uid);
+      const subcribed = await isSubscribed(customerId);
+
+      if (subcribed) {
+        navigateTo("buddy.html");
+      } else {
+        navigateTo("convince.html");
       }
     } else if (
       window.location.pathname !== "/login.html" &&

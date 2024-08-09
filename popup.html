@@ -1,20 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Speech Buddy</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-  <div id="start-view">
-    <h2>Welcome to Speech Buddy</h2>
-    <div id="loader"></div>
-  </div>
-  
-  <script src="firebase-app-compat.js"></script>
-  <script src="firebase-auth-compat.js"></script>
-  <script src="scripts/firebease-config.js"></script>
-  <!-- navigation -->
-  <script src="scripts/navigation.js"></script>
-  <script src="scripts/start.js"></script>
-</body>
+    <head>
+        <title>Speech Buddy</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
+    <body>
+        <div id="start-view">
+            <h2>Welcome to Speech Buddy</h2>
+            <div id="loader"></div>
+        </div>
+
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-storage-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/start.js"></script>
+    </body>
 </html>
