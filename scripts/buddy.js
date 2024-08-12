@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
 const getBuddyList = async (user) => {
   try {
     const data = await fetchFirebaseData(user.uid);
-    console.log(data);
     return data.buddyList || [];
   } catch (error) {
     console.error("Error fetching buddy list:", error);
