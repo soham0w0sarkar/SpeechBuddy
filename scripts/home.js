@@ -9,31 +9,31 @@ let isTailoredQuestions = true;
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-      const query = new URLSearchParams(window.location.search);
-
-      let pillar,
-        goal,
-        gradeLevel,
-        isSubscribed = false;
-
-      if (query.get("from") === "buddy") {
-        pillar = query.get("pillar");
-        goal = query.get("goal");
-        gradeLevel = query.get("gradeLevel");
-        isSubscribed = true;
-      } else {
-        isSubscribed = false;
-      }
-
       const openDashboardButton = document.getElementById("dashboard-button");
       const logoutButton = document.getElementById("logout-button");
 
-      await fetchUserAndCheckSubscription(user.uid);
+      let gradeLevel, pillar, goal;
+      let isSubscribed = false;
+
+      const customer = await fetchUserAndCheckTier(user.uid);
+
+      if (customer.tier === "admin") {
+        toggleOpenDashboardButton(true);
+        gradeLevel = customer.gradeLevel;
+        pillar = customer.pillar;
+        goal = customer.goal;
+        isSubscribed = true;
+      } else if (customer.tier === "buddy") {
+        gradeLevel = customer.gradeLevel;
+        pillar = customer.pillar;
+        goal = customer.goal;
+        isSubscribed = true;
+      }
+
+      toggleTailoredQuestions(isSubscribed);
 
       setupEventListeners(openDashboardButton, logoutButton);
       setupGradePillarGoalSelection();
-
-      toggleTailoredQuestions(isSubscribed);
 
       if (gradeLevel) {
         selectedGradeLevel = gradeLevel;
@@ -120,9 +120,13 @@ const toggleTailoredQuestions = (isSubscribed) => {
   if (isSubscribed) {
     tailoredQuestions.classList.remove("hidden");
     tailoredQuestionsLabel.classList.remove("hidden");
-  } else {
-    tailoredQuestions.classList.add("hidden");
-    tailoredQuestionsLabel.classList.add("hidden");
+  }
+};
+
+const toggleOpenDashboardButton = (isSubscribed) => {
+  const openDashboardButton = document.getElementById("dashboard-button");
+  if (isSubscribed) {
+    openDashboardButton.classList.remove("hidden");
   }
 };
 
@@ -289,25 +293,18 @@ const signout = () => {
     });
 };
 
-const fetchUserAndCheckSubscription = async (uid) => {
+const fetchUserAndCheckTier = async (uid) => {
   try {
     showLoader();
-    const firebaseDoc = await fetchFirebaseData(uid);
+    const customer = await fetchFirebaseData(uid);
 
-    if (!firebaseDoc) {
+    if (!customer) {
       throw new Error("Error fetching user data from Firebase");
     }
-
-    const subscribed = await isSubscribed(firebaseDoc.customerId);
-    saveUserToCookie({
-      email: firebaseDoc.email,
-      subscribed: subscribed,
-      uid: uid,
-      customerId: firebaseDoc.customerId,
-    });
-
+    saveUserToCookie(customer);
     hideLoader();
-    return true;
+
+    return customer;
   } catch (error) {
     console.error("Error fetching user data:", error);
     hideLoader();

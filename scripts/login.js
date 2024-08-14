@@ -33,8 +33,9 @@ function login() {
       hideLoader();
       document.getElementById("login-error-message").textContent =
         "Login successful";
+
       if (subscribed) {
-        navigateTo("buddy.html");
+        navigateTo("home.html");
       } else {
         navigateTo("convince.html");
       }

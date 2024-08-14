@@ -38,7 +38,7 @@ async function handleInvitationCodeSubmission(user) {
       return;
     }
 
-    if (parentData.recipientEmail !== user.email) {
+    if (invitationDoc.recipientEmail !== user.email) {
       document.getElementById("invitation-error-message").innerText =
         "This invitation code wasn't meant for you.";
       return;
@@ -50,24 +50,20 @@ async function handleInvitationCodeSubmission(user) {
       customerId: parentData.customerId,
     });
 
-    await firebase
-      .firestore()
-      .collection("Users")
-      .doc(parentUid)
-      .update({
-        buddylist: firebase.firestore.FieldValue.arrayUnion(currentUid),
-      });
+    await updateFirebaseData(parentUid, {
+      buddyList: firebase.firestore.FieldValue.arrayUnion(currentUid),
+    });
 
-    await firebase
-      .firestore()
-      .collection("Invitations")
-      .doc(inviteCode)
-      .update({
-        status: "completed",
-      });
+    await updateFirebaseData(
+      inviteCode,
+      {
+        status: "accepted",
+      },
+      "Invitations",
+    );
 
     console.log("Invitation processed successfully.");
-    navigateTo("buddy.html");
+    navigateTo("home.html");
   } catch (error) {
     console.error("Error processing invitation code:", error);
     document.getElementById("invitation-error-message").innerText =

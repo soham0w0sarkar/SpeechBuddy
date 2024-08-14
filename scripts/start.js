@@ -8,7 +8,7 @@ async function start() {
         await updateFirebaseData(user.uid, { tier: "admin" });
 
       if (subcribed) {
-        navigateTo("buddy.html");
+        navigateTo("home.html");
       } else {
         navigateTo("convince.html");
       }
