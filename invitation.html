@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Enter Invitation Code</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
+    <body>
+        <div id="invitation-view">
+            <h2>Enter Invitation Code</h2>
+            <input type="text" id="invite-code" placeholder="Invitation Code" />
+            <button id="submit-invite-code">Submit</button>
+            <div id="invitation-error-message" class="error-message"></div>
+            <button id="continue-button" class="text-button">Continue</button>
+            <!-- Continue Button -->
+        </div>
+        <div id="loader" class="hidden"></div>
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-storage-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="scripts/invitation.js"></script>
+    </body>
+</html>

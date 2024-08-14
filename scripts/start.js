@@ -1,8 +1,11 @@
 async function start() {
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-      const { customerId } = await fetchFirebaseData(user.uid);
-      const subcribed = await isSubscribed(customerId);
+      const customer = await fetchFirebaseData(user.uid);
+      const subcribed = await isSubscribed(customer.customerId);
+
+      if (subcribed && customer.tier === "free")
+        await updateFirebaseData(user.uid, { tier: "admin" });
 
       if (subcribed) {
         navigateTo("buddy.html");

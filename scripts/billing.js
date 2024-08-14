@@ -6,7 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const purchaseButton = document.querySelector(".primary");
-    purchaseButton.addEventListener("click", purchase);
+    purchaseButton.addEventListener("click", async (e) => {
+      await purchase(user);
+    });
 
     const navHome = document.querySelector(".secondary");
     navHome.addEventListener("click", () => {
@@ -15,9 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function purchase() {
+async function purchase(user) {
   try {
-    const customerId = await getCustomerId();
+    const customerId = await getCustomerId(user);
     const session = await getPaymentSession(
       customerId,
       "https://speechbuddy-30390.web.app/success.html",
@@ -34,13 +36,7 @@ async function purchase() {
   }
 }
 
-async function getCustomerId() {
-  const user = firebase.auth().currentUser;
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
+async function getCustomerId(user) {
   try {
     const { customerId } = await fetchFirebaseData(user.uid);
     return customerId;

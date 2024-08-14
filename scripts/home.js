@@ -293,6 +293,7 @@ const fetchUserAndCheckSubscription = async (uid) => {
   try {
     showLoader();
     const firebaseDoc = await fetchFirebaseData(uid);
+
     if (!firebaseDoc) {
       throw new Error("Error fetching user data from Firebase");
     }

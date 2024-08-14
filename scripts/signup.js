@@ -18,18 +18,23 @@ async function signup() {
     userCredential = await firebase
       .auth()
       .createUserWithEmailAndPassword(email, password);
+
     const id = await createStripeCustomer(email, userCredential.user.uid);
 
     if (!id) {
       throw new Error("Error creating customer in Stripe");
     }
 
-    await createCustomerInFirebase(email, userCredential.user.uid, id);
+    await createFirebaseData(userCredential.user.uid, {
+      email,
+      customerId: id,
+      tier: "free",
+    });
 
     hideLoader();
     clearSignupFields();
     displaySignupMessage("Signup successful");
-    navigateTo("convince.html");
+    navigateTo("invitation.html");
   } catch (error) {
     if (userCredential) {
       await cleanupFailedSignup();
@@ -69,18 +74,6 @@ async function createStripeCustomer(email, uid) {
   }
 }
 
-async function createCustomerInFirebase(email, uid, customerID) {
-  try {
-    await firebase.firestore().collection("Users").doc(uid).set({
-      email,
-      customerId: customerID,
-      buddyList: [],
-    });
-  } catch (error) {
-    throw new Error("Error creating customer in Firebase");
-  }
-}
-
 function clearSignupFields() {
   document.getElementById("signup-email").value = "";
   document.getElementById("signup-password").value = "";
@@ -97,3 +90,5 @@ async function cleanupFailedSignup() {
     await firebase.auth().signOut();
   }
 }
+
+async function getInvitationCode() {}
