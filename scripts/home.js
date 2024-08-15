@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const logoutButton = document.getElementById("logout-button");
 
       let gradeLevel, pillar, goal;
-      let isSubscribed = false;
+      isSubscribed = false;
 
       const customer = await fetchUserAndCheckTier(user.uid);
 
@@ -75,7 +75,9 @@ const setupEventListeners = (openDashboardButton, logoutButton) => {
   });
 
   const continueBtn = document.getElementById("continueBtn");
-  continueBtn.addEventListener("click", onContinue);
+  continueBtn.addEventListener("click", async () => {
+    await onContinue(isSubscribed);
+  });
 };
 
 const setupGradePillarGoalSelection = () => {
@@ -212,7 +214,7 @@ const renderSpecificFields = (pillar, goal) => {
   return fields;
 };
 
-const onContinue = async () => {
+const onContinue = async (isSubscribed) => {
   const formData = {
     gradeLevel: selectedGradeLevel,
     pillar: selectedPillar,
@@ -258,7 +260,6 @@ const onContinue = async () => {
   };
 
   let params = new URLSearchParams(formData).toString();
-  const isSubscribed = getUserFromCookie().subscribed || false;
 
   params += `&subscribedUser=${isSubscribed.toString()}`;
   params += `&tailoredQuestions=${isTailoredQuestions.toString()}`;

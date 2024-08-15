@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!currentUser) sendMessage();
 
     await loadState();
+
     attachEventListeners({
       nextBtn: nextFlashcard,
       previousBtn: previousFlashcard,
