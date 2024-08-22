@@ -4,7 +4,7 @@ let recordedChunks = [];
 let selectedGradeLevel = "";
 let selectedPillar = "";
 let selectedGoal = "";
-let isTailoredQuestions = true;
+let isTailoredQuestions = "specific";
 
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
@@ -29,8 +29,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         goal = customer.goal;
         isSubscribed = true;
       }
-
-      toggleTailoredQuestions(isSubscribed);
 
       setupEventListeners(openDashboardButton, logoutButton);
       setupGradePillarGoalSelection();
@@ -71,7 +69,8 @@ const setupEventListeners = (openDashboardButton, logoutButton) => {
 
   const tailoredQuestions = document.getElementById("tailoredQuestions");
   tailoredQuestions.addEventListener("change", () => {
-    isTailoredQuestions = tailoredQuestions.value === "yes";
+    isTailoredQuestions = tailoredQuestions.value;
+    console.log(isTailoredQuestions);
   });
 
   const continueBtn = document.getElementById("continueBtn");
@@ -111,18 +110,6 @@ const setupGradePillarGoalSelection = () => {
       );
     });
   });
-};
-
-const toggleTailoredQuestions = (isSubscribed) => {
-  const tailoredQuestions = document.getElementById("tailoredQuestions");
-  const tailoredQuestionsLabel = document.getElementById(
-    "tailoredQuestionsLabel",
-  );
-
-  if (isSubscribed) {
-    tailoredQuestions.classList.remove("hidden");
-    tailoredQuestionsLabel.classList.remove("hidden");
-  }
 };
 
 const toggleOpenDashboardButton = (isSubscribed) => {
@@ -215,6 +202,7 @@ const renderSpecificFields = (pillar, goal) => {
 };
 
 const onContinue = async (isSubscribed) => {
+  showLoader();
   const formData = {
     gradeLevel: selectedGradeLevel,
     pillar: selectedPillar,
@@ -261,9 +249,18 @@ const onContinue = async (isSubscribed) => {
 
   let params = new URLSearchParams(formData).toString();
 
+  if (isTailoredQuestions === "specific") {
+    const scrapedData = await sendScrapeRequest();
+    console.log("Scraped data: ", scrapedData);
+    if (scrapedData && scrapedData.content) {
+      params += `&text=${JSON.stringify(scrapedData.content)}`;
+    }
+  }
+
   params += `&subscribedUser=${isSubscribed.toString()}`;
   params += `&tailoredQuestions=${isTailoredQuestions.toString()}`;
 
+  hideLoader();
   navigateTo("renderPopup.html?" + params);
 };
 
@@ -427,4 +424,13 @@ const fetchToken = async (uid) => {
     console.error("Error fetching token:", error);
     return null;
   }
+};
+
+const sendScrapeRequest = async () => {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const response = await chrome.tabs.sendMessage(tabs[0].id, {
+    action: "scrape",
+  });
+
+  return response;
 };

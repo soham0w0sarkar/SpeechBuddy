@@ -12,8 +12,9 @@
   },
   "content_scripts": [
     {
+      "run_at": "document_end",
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js", "scrapper.js"]
     }
   ],
   "web_accessible_resources": [

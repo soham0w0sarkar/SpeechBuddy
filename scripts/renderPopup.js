@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let additionalParams = {};
   let user = null;
   let isSubscribed = false;
+  let isTailoredQuestions;
 
   firebase.auth().onAuthStateChanged(async (currentUser) => {
     user = currentUser.uid;
@@ -16,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
       gradeLevel = formData.get("gradeLevel");
       pillar = formData.get("pillar");
       goal = formData.get("goal");
+      isTailoredQuestions = formData.get("tailoredQuestions");
+      text = formData.get("text") || null;
+
+      console.log(gradeLevel, pillar, goal, isTailoredQuestions, text);
 
       additionalParams = {
         letter: formData.get("letter") || null,
@@ -40,7 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    await save(gradeLevel, pillar, goal, additionalParams, user, isSubscribed);
+    await save(
+      gradeLevel,
+      pillar,
+      goal,
+      additionalParams,
+      user,
+      isSubscribed,
+      isTailoredQuestions,
+      text,
+    );
 
     document.querySelector("#render").addEventListener("click", async () => {
       const response = await sendMessage();
@@ -56,6 +70,8 @@ async function save(
   additionalParams,
   user,
   isSubscribed,
+  isTailoredQuestions,
+  text,
 ) {
   await chrome.storage.local.set({
     data: {
@@ -65,6 +81,8 @@ async function save(
       additionalParams,
       user,
       isSubscribed,
+      isTailoredQuestions,
+      text,
     },
   });
 

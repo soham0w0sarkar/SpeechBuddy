@@ -1,0 +1,82 @@
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  (async () => {
+    try {
+      if (request.action === "scrape") {
+        const pageUrl = window.location.href;
+
+        if (pageUrl.includes("youtube.com")) {
+          const videoDetails = await getVideoDetails();
+          console.log("Video details fetched:", videoDetails);
+          sendResponse({ content: videoDetails });
+        } else {
+          const scrapedText = scrapePageContent();
+          console.log("Page content scraped:", scrapedText);
+          sendResponse({ content: scrapedText });
+        }
+      }
+    } catch (error) {
+      console.error("Error in onMessage listener:", error);
+      sendResponse({ error: error.message });
+    }
+  })();
+
+  return true;
+});
+
+const scrapePageContent = () => {
+  const bodyText = document.body.innerText || document.body.textContent;
+  const tokens = bodyText
+    .split(/\s+/)
+    .filter((token) => token.trim().length > 0);
+
+  const maxTokens = 2000;
+  const limitedTokens = tokens.slice(0, maxTokens);
+
+  const result = limitedTokens.join(" ");
+  console.log("Limited page content length:", result.length);
+  return result;
+};
+
+const getVideoDetails = async () => {
+  try {
+    const titleElement = await waitForElement("#title > h1");
+    const descriptionElement = await waitForElement(
+      "#description-inline-expander",
+    );
+
+    const title = titleElement ? titleElement.innerText : "Title not found";
+    const description = descriptionElement
+      ? descriptionElement.innerText
+      : "Description not found";
+
+    return {
+      title: title,
+      description: description,
+    };
+  } catch (error) {
+    console.error("Error in getVideoDetails:", error);
+    return { error: error.message };
+  }
+};
+
+const waitForElement = (selector, timeout = 5000) => {
+  return new Promise((resolve, reject) => {
+    const intervalTime = 100;
+    let timePassed = 0;
+
+    const interval = setInterval(() => {
+      const element = document.querySelector(selector);
+
+      if (element) {
+        clearInterval(interval);
+        resolve(element);
+      } else if (timePassed >= timeout) {
+        clearInterval(interval);
+        console.warn(`Element not found: ${selector}`);
+        resolve(null);
+      }
+
+      timePassed += intervalTime;
+    }, intervalTime);
+  });
+};

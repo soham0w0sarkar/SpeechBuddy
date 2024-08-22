@@ -9,7 +9,8 @@ let mediaRecorder,
   isSubscribed = false,
   user,
   session,
-  tailoredQuestions = true,
+  isTailoredQuestions,
+  text,
   intervalId;
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -26,7 +27,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       "stop-button": stopRecording,
       generateButton: fetchFlashcards,
       cut: sendMessage,
+      backButton: sendMessage,
     });
+
     await fetchFlashcards();
     showContent();
   });
@@ -37,23 +40,32 @@ const loadState = async () => {
   try {
     const { data } = await chrome.storage.local.get(["data"]);
     if (data) {
-      ({ user, isSubscribed, gradeLevel, pillar, goal, additionalParams } =
-        data);
-      console.log(
+      ({
         user,
         isSubscribed,
         gradeLevel,
         pillar,
         goal,
         additionalParams,
-      );
+        isTailoredQuestions,
+        text,
+      } = data);
     }
+    console.log(
+      user,
+      isSubscribed,
+      gradeLevel,
+      pillar,
+      goal,
+      additionalParams,
+      isTailoredQuestions,
+      text,
+    );
   } catch (error) {
     console.error("Error loading state:", error);
   }
 };
 
-// Attach event listeners to buttons
 function attachEventListeners(buttonListeners) {
   Object.entries(buttonListeners).forEach(([buttonId, listener]) => {
     const button = document.getElementById(buttonId);
@@ -62,7 +74,6 @@ function attachEventListeners(buttonListeners) {
   });
 }
 
-// Start recording audio
 function startRecording() {
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
@@ -168,7 +179,6 @@ function showContent() {
   hideLoader();
 }
 
-// Fetch flashcards from the API
 async function fetchFlashcards() {
   showLoader();
   try {
@@ -183,8 +193,9 @@ async function fetchFlashcards() {
           pillar,
           goal,
           userStatus: isSubscribed ? "premium" : "free",
-          userSpec: "generic",
+          userSpec: isTailoredQuestions,
           studentId: user,
+          text,
         }),
       },
     );
@@ -273,13 +284,11 @@ async function sendMessage() {
   }
 }
 
-// Show the loader
 function showLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.style.display = "block";
 }
 
-// Hide the loader
 function hideLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.style.display = "none";
