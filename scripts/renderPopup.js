@@ -20,8 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
       isTailoredQuestions = formData.get("tailoredQuestions");
       text = formData.get("text") || null;
 
-      console.log(gradeLevel, pillar, goal, isTailoredQuestions, text);
-
       additionalParams = {
         letter: formData.get("letter") || null,
         position: formData.get("position") || null,
@@ -85,8 +83,6 @@ async function save(
       text,
     },
   });
-
-  console.log("Data saved.");
 }
 
 async function sendMessage() {

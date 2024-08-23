@@ -70,7 +70,6 @@ const setupEventListeners = (openDashboardButton, logoutButton) => {
   const tailoredQuestions = document.getElementById("tailoredQuestions");
   tailoredQuestions.addEventListener("change", () => {
     isTailoredQuestions = tailoredQuestions.value;
-    console.log(isTailoredQuestions);
   });
 
   const continueBtn = document.getElementById("continueBtn");
@@ -251,7 +250,6 @@ const onContinue = async (isSubscribed) => {
 
   if (isTailoredQuestions === "specific") {
     const scrapedData = await sendScrapeRequest();
-    console.log("Scraped data: ", scrapedData);
     if (scrapedData && scrapedData.content) {
       params += `&text=${JSON.stringify(scrapedData.content)}`;
     }
@@ -281,7 +279,6 @@ const signout = () => {
     .auth()
     .signOut()
     .then(() => {
-      console.log("User signed out successfully");
       hideLoader();
       navigateTo("login.html");
     })

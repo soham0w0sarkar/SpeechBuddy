@@ -1,12 +1,10 @@
 const renderPopup = async () => {
   if (window.renderingPopup) {
-    console.log("renderPopup call is already in progress.");
     return;
   }
   window.renderingPopup = true;
 
   if (window.popupLoaded) {
-    console.log("Popup is already loaded.");
     window.renderingPopup = false;
     return;
   }
@@ -103,7 +101,6 @@ const hidePopup = () => {
     setTimeout(() => {
       popup.style.display = "none";
       createBookmarkElement();
-      console.log("Popup hidden and bookmark element created");
     }, 500);
   }
 };
@@ -118,13 +115,11 @@ const togglePopupVisibility = () => {
       popup.offsetHeight;
       popup.style.opacity = "1";
       if (bookmark) bookmark.remove();
-      console.log("Popup shown and bookmark element removed");
     } else {
       popup.style.opacity = "0";
       setTimeout(() => {
         popup.style.display = "none";
         createBookmarkElement();
-        console.log("Popup hidden and bookmark element shown");
       }, 500);
     }
   }
@@ -164,22 +159,18 @@ const closePopup = () => {
   const bookmark = document.querySelector(".bookmark-element");
   if (popup) {
     popup.remove();
-    console.log("Popup removed");
   }
   if (bookmark) {
     bookmark.remove();
-    console.log("Bookmark element removed");
   }
   window.popupLoaded = false;
 };
 
 const makeDraggable = (element) => {
-  console.log(element);
   let isDragging = false;
   let offsetX, offsetY;
 
   const onMouseDown = (e) => {
-    console.log("onMouseDown");
     isDragging = true;
     offsetX = e.clientX - element.getBoundingClientRect().left;
     offsetY = e.clientY - element.getBoundingClientRect().top;
@@ -208,7 +199,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "render") {
     if (renderPopup()) sendResponse({ message: "Rendering popup" });
   } else if (request.action === "closePopup") {
-    console.log("Closing popup");
     closePopup();
   }
 });

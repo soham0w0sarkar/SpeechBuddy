@@ -20,6 +20,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await loadState();
 
+    // Hide the record button if the user is not subscribed
+    if (!isSubscribed) {
+      const recordButton = document.getElementById("record-button");
+      if (recordButton) recordButton.style.display = "none";
+    }
+
     attachEventListeners({
       nextBtn: nextFlashcard,
       previousBtn: previousFlashcard,
@@ -35,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-// Load state from Chrome storage
 const loadState = async () => {
   try {
     const { data } = await chrome.storage.local.get(["data"]);
@@ -51,16 +56,6 @@ const loadState = async () => {
         text,
       } = data);
     }
-    console.log(
-      user,
-      isSubscribed,
-      gradeLevel,
-      pillar,
-      goal,
-      additionalParams,
-      isTailoredQuestions,
-      text,
-    );
   } catch (error) {
     console.error("Error loading state:", error);
   }
@@ -109,12 +104,10 @@ function startTimer() {
   }, 1000);
 }
 
-// Handle available data from MediaRecorder
 function handleDataAvailable(event) {
   if (event.data.size > 0) recordedChunks.push(event.data);
 }
 
-// Stop recording and handle uploaded audio
 function stopRecording() {
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
@@ -135,7 +128,6 @@ function stopRecording() {
   };
 }
 
-// Upload audio file to Firebase
 async function uploadAudio(audioBlob) {
   try {
     toggleButtons(true);
@@ -153,14 +145,12 @@ async function uploadAudio(audioBlob) {
   }
 }
 
-// Show or hide all buttons
 function toggleButtons(disable) {
   document
     .querySelectorAll("button")
     .forEach((button) => (button.disabled = disable));
 }
 
-// Hide content except essential elements
 function hideContent() {
   Array.from(document.body.children).forEach((element) => {
     if (!element.matches("header, .cut, #loader")) {
@@ -169,7 +159,6 @@ function hideContent() {
   });
 }
 
-// Show content and hide loader
 function showContent() {
   Array.from(document.body.children).forEach((element) => {
     if (!element.matches("header, .cut, #timer")) {
@@ -217,7 +206,6 @@ async function fetchFlashcards() {
   }
 }
 
-// Render flashcards to the DOM
 function renderFlashcards() {
   const flashcardContainer = document.getElementById("flashcardContainer");
   flashcardContainer.innerHTML = "";
@@ -251,19 +239,16 @@ function renderFlashcards() {
   updateNavigation();
 }
 
-// Update navigation display
 function updateNavigation() {
   const currentIndexElem = document.getElementById("currentIndex");
   currentIndexElem.textContent = `${currentIndex + 1} / ${Object.keys(questions).length}`;
 }
 
-// Navigate to the next flashcard
 function nextFlashcard() {
   currentIndex = (currentIndex + 1) % Object.keys(questions).length;
   renderFlashcards();
 }
 
-// Navigate to the previous flashcard
 function previousFlashcard() {
   currentIndex =
     (currentIndex - 1 + Object.keys(questions).length) %
@@ -271,7 +256,6 @@ function previousFlashcard() {
   renderFlashcards();
 }
 
-// Send a message to close the popup
 async function sendMessage() {
   try {
     const [activeTab] = await chrome.tabs.query({
