@@ -2,25 +2,23 @@ let currentIndex = 0;
 let gradeLevel,
   pillar,
   goal,
-  additionalParams,
+  prompt,
   questions = {};
 let mediaRecorder,
   recordedChunks = [],
   isSubscribed = false,
   user,
   session,
-  isTailoredQuestions,
-  text,
   intervalId;
 
 document.addEventListener("DOMContentLoaded", async () => {
   hideContent();
   firebase.auth().onAuthStateChanged(async (currentUser) => {
     if (!currentUser) sendMessage();
+    user = currentUser;
 
     await loadState();
 
-    // Hide the record button if the user is not subscribed
     if (!isSubscribed) {
       const recordButton = document.getElementById("record-button");
       if (recordButton) recordButton.style.display = "none";
@@ -45,16 +43,7 @@ const loadState = async () => {
   try {
     const { data } = await chrome.storage.local.get(["data"]);
     if (data) {
-      ({
-        user,
-        isSubscribed,
-        gradeLevel,
-        pillar,
-        goal,
-        additionalParams,
-        isTailoredQuestions,
-        text,
-      } = data);
+      ({ isSubscribed, gradeLevel, pillar, goal, prompt } = data);
     }
   } catch (error) {
     console.error("Error loading state:", error);
@@ -88,7 +77,6 @@ function startRecording() {
     .catch((err) => console.error("Error accessing microphone:", err));
 }
 
-// Start timer for recording
 function startTimer() {
   const timer = document.getElementById("timer");
   let min = 0,
@@ -177,14 +165,12 @@ async function fetchFlashcards() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          url: "https://www.nature.com/articles/d41586-021-02690-5",
           gradeLevel,
           pillar,
           goal,
+          prompt,
           userStatus: isSubscribed ? "premium" : "free",
-          userSpec: isTailoredQuestions,
-          studentId: user,
-          text,
+          studentId: user.uid,
         }),
       },
     );

@@ -24,12 +24,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const scrapePageContent = () => {
-  const bodyText = document.body.innerText || document.body.textContent;
+  let bodyText = document.body.innerText || document.body.textContent;
+
+  bodyText = bodyText.replace(/https?:\/\/\S+/g, "");
+
+  bodyText = bodyText.replace(/\s+/g, " ").trim();
+
   const tokens = bodyText
     .split(/\s+/)
     .filter((token) => token.trim().length > 0);
 
-  const maxTokens = 2000;
+  const maxTokens = 1000;
   const limitedTokens = tokens.slice(0, maxTokens);
 
   const result = limitedTokens.join(" ");
@@ -43,15 +48,37 @@ const getVideoDetails = async () => {
     const descriptionElement = await waitForElement(
       "#description-inline-expander",
     );
+    const tagsElement = document.querySelector('meta[name="keywords"]');
 
     const title = titleElement ? titleElement.innerText : "Title not found";
-    const description = descriptionElement
+
+    let description = descriptionElement
       ? descriptionElement.innerText
       : "Description not found";
+    description = description
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Limit description to 1000 tokens
+    const descriptionTokens = description
+      .split(/\s+/)
+      .filter((token) => token.trim().length > 0);
+    const limitedDescriptionTokens = descriptionTokens.slice(0, 1000);
+    description = limitedDescriptionTokens.join(" ");
+
+    // Extract tags
+    const tags = tagsElement
+      ? tagsElement
+          .getAttribute("content")
+          .split(",")
+          .map((tag) => tag.trim())
+      : [];
 
     return {
       title: title,
       description: description,
+      tags: tags,
     };
   } catch (error) {
     console.error("Error in getVideoDetails:", error);
