@@ -11,10 +11,21 @@
             </header>
             <div class="main">
                 <div id="formContainer">
-                    <label id="tailoredQuestionsLabel" for="tailoredQuestions">
+                    <label
+                        id="tailoredQuestionsLabel"
+                        class="hidden"
+                        for="tailoredQuestions"
+                    >
                         Tailored questions:
                     </label>
-                    <select id="tailoredQuestions">
+                    <select id="tailoredQuestions" class="hidden">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                    <label id="questionTypeLabel" for="questionType">
+                        Select Question Type:
+                    </label>
+                    <select id="questionType">
                         <option value="specific">Specific</option>
                         <option value="generic">Generic</option>
                     </select>

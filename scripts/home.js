@@ -46,7 +46,7 @@ const additionalParams = {
   conceptType: null,
 };
 
-let isTailoredQuestions = "specific";
+let questionType = "specific";
 
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
@@ -94,11 +94,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       renderAdditionalOptions();
-      document.getElementById("continueBtn").disabled = !(
-        selectedGradeLevel &&
-        selectedPillar &&
-        selectedGoal
-      );
     }
   });
 });
@@ -109,9 +104,9 @@ const setupEventListeners = (openDashboardButton, logoutButton) => {
   });
   logoutButton.addEventListener("click", signout);
 
-  const tailoredQuestions = document.getElementById("tailoredQuestions");
-  tailoredQuestions.addEventListener("change", () => {
-    isTailoredQuestions = tailoredQuestions.value;
+  const type = document.getElementById("questionType");
+  type.addEventListener("change", () => {
+    questionType = type.value;
   });
 
   const continueBtn = document.getElementById("continueBtn");
@@ -343,12 +338,19 @@ function generateOptions(options) {
 
 function generateDropdown(id, options) {
   return `
-        <label for="${id}">Select ${id}:</label>
+        <label for="${id}">Select ${formatString(id)}:</label>
           <select id="${id}" name="${id}">
-            <option value="">Select ${id}</option>
+            <option value="">Select ${formatString(id)}</option>
             ${generateOptions(options)}
           </select>
     `;
+}
+
+function formatString(str) {
+  let formattedStr = str.split(/(?=[A-Z])/).join(" ");
+  formattedStr = formattedStr.charAt(0).toUpperCase() + formattedStr.slice(1);
+
+  return formattedStr;
 }
 
 function generateCheckboxes(options, name) {
@@ -642,15 +644,15 @@ const onContinue = async (isSubscribed) => {
     additionalParams,
   );
 
-  if (isTailoredQuestions === "specific") {
+  if (questionType === "specific") {
     const scrapedData = await sendScrapeRequest();
 
     if (scrapedData && scrapedData.content) {
-      prompt += `Using text from scrapped data of current page: ${JSON.stringify(scrapedData.content)}, also provide the answers. Keep the format in Q: Question and A: Answer. No Extra strings`;
+      prompt += `.\n Using text from scrapped data of current page: ${JSON.stringify(scrapedData.content)}.\n also provide the answers, Keep the format in Q: Question and A: Answer. No Extra strings`;
     }
   } else {
     prompt +=
-      "also provide the answers. Keep the format in Q: Question and A: Answer. No Extra strings";
+      ".\n also provide the answers, Keep the format in Q: Question and A: Answer. No Extra strings";
   }
 
   let params = `prompt=${prompt}`;
@@ -947,63 +949,63 @@ function generatePrompt(goal, gradeLevel, pillar, additionalParams) {
   switch (pillar) {
     case "Articulation":
       if (goal === "Consonant Clusters" || goal === "Letter Sounds") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} ${additionalParams.letter} in the ${additionalParams.position} position of words within the ${additionalParams.level}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} ${additionalParams.letter} in the ${additionalParams.position} position of words within the ${additionalParams.level}`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     case "Expressive":
       if (goal === "Labeling") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using ${additionalParams.labeling} in ${additionalParams.activity}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using ${additionalParams.labeling} in ${additionalParams.activity}`;
       } else if (goal === "Sequence") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using the ${additionalParams.sequence} in ${additionalParams.events}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using the ${additionalParams.sequence} in ${additionalParams.events}`;
       } else if (goal === "Definitions") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.definition}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.definition}`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     case "Phonology":
       if (goal === "Multisyllabic Words") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.numberOfSyllables} to reduce syllable deletion in the ${additionalParams.deletionType} position of words`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.numberOfSyllables} to reduce syllable deletion in the ${additionalParams.deletionType} position of words`;
       } else if (
         goal === "Assimilation" &&
         additionalParams.assimilation !== "Consonant Deletion"
       ) {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.assimilation}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.assimilation}`;
       } else if (
         goal === "Assimilation" &&
         additionalParams.assimilation === "Consonant Deletion"
       ) {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.assimilation} in the ${additionalParams.position} of words`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.assimilation} in the ${additionalParams.position} of words`;
       } else if (goal === "Minimal Pairs") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal of ${goal} by ${additionalParams.pairDiscrim}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal of ${goal} by ${additionalParams.pairDiscrim}`;
       } else if (goal === "Substitution") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.substitutionType}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} with a goal to reduce the phonological process of ${goal} by ${additionalParams.substitutionType}`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     case "Receptive":
       if (goal === "Categories") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by ${additionalParams.receptive} in ${additionalParams.receptiveActivity} format`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by ${additionalParams.receptive} in ${additionalParams.receptiveActivity} format`;
       } else if (goal === "Vocabulary") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by identifying ${additionalParams.wordType} in ${additionalParams.vocabularyActivity}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by identifying ${additionalParams.wordType} in ${additionalParams.vocabularyActivity}`;
       } else if (goal === "Following Directions") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.steps} containing ${additionalParams.conceptType} concepts`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.steps} containing ${additionalParams.conceptType} concepts`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     case "Pragmatic":
       if (goal === "Conversation") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} with prompts for ${additionalParams.conversation}`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} with prompts for ${additionalParams.conversation}`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     case "Fluency":
       if (goal === "Desensitization") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.desensitization} at the ${additionalParams.level} level`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.desensitization} at the ${additionalParams.level} level`;
       } else if (goal === "Techniques") {
-        return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by practicing ${additionalParams.techniques} at the ${additionalParams.techniquesLevel} level`;
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by practicing ${additionalParams.techniques} at the ${additionalParams.techniquesLevel} level`;
       }
-      return `Act like a speech pathologist and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
+      return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 
     default:
       return "";

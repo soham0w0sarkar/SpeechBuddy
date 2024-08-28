@@ -4,7 +4,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === "scrape") {
         const pageUrl = window.location.href;
 
-        if (pageUrl.includes("youtube.com")) {
+        if (pageUrl.includes("youtube.com/watch")) {
           const videoDetails = await getVideoDetails();
           console.log("Video details fetched:", videoDetails);
           sendResponse({ content: videoDetails });
@@ -45,10 +45,22 @@ const scrapePageContent = () => {
 const getVideoDetails = async () => {
   try {
     const titleElement = await waitForElement("#title > h1");
-    const descriptionElement = await waitForElement(
-      "#description-inline-expander",
+    let descriptionElement = await waitForElement(
+      "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
     );
-    const tagsElement = document.querySelector('meta[name="keywords"]');
+
+    // If the description is not found, try to click the #expand element and fetch the description again
+    if (!descriptionElement) {
+      const expandButton = document.querySelector("#expand");
+      if (expandButton) {
+        expandButton.click();
+        // Wait a moment for the description to load after expanding
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        descriptionElement = await waitForElement(
+          "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
+        );
+      }
+    }
 
     const title = titleElement ? titleElement.innerText : "Title not found";
 
@@ -67,18 +79,9 @@ const getVideoDetails = async () => {
     const limitedDescriptionTokens = descriptionTokens.slice(0, 1000);
     description = limitedDescriptionTokens.join(" ");
 
-    // Extract tags
-    const tags = tagsElement
-      ? tagsElement
-          .getAttribute("content")
-          .split(",")
-          .map((tag) => tag.trim())
-      : [];
-
     return {
       title: title,
       description: description,
-      tags: tags,
     };
   } catch (error) {
     console.error("Error in getVideoDetails:", error);
