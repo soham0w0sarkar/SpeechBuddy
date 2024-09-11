@@ -3,7 +3,8 @@ let gradeLevel,
   pillar,
   goal,
   prompt,
-  questions = {};
+  questions = {},
+  answeredQuestionsCount = 0;
 let mediaRecorder,
   recordedChunks = [],
   isSubscribed = false,
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     user = currentUser;
 
     await loadState();
+    updateSubmitButtonState();
 
     if (!isSubscribed) {
       const recordButton = document.getElementById("record-button");
@@ -30,8 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "record-button": startRecording,
       "stop-button": stopRecording,
       generateButton: fetchFlashcards,
-      cut: sendMessage,
-      backButton: sendMessage,
+      submitButton: submit,
     });
 
     await fetchFlashcards();
@@ -119,16 +120,22 @@ function stopRecording() {
 async function uploadAudio(audioBlob) {
   try {
     toggleButtons(true);
-    const audioFileName = `${user}_${session}_${currentIndex}.wav`;
+    const audioFileName = `${user.uid}_${session}_${currentIndex}.wav`;
     const audioFileRef = firebase.storage().ref().child(audioFileName);
     await audioFileRef.put(audioBlob);
     console.log("Uploaded audio successfully:", audioFileName);
     const downloadURL = await audioFileRef.getDownloadURL();
     console.log("File available at", downloadURL);
+
+    questions[Object.keys(questions)[currentIndex]].answered = true;
+    answeredQuestionsCount++;
+
+    toggleRecordButtons(false);
   } catch (error) {
     console.error("Error uploading audio:", error);
   } finally {
     toggleButtons(false);
+    updateSubmitButtonState();
     hideLoader();
   }
 }
@@ -139,9 +146,18 @@ function toggleButtons(disable) {
     .forEach((button) => (button.disabled = disable));
 }
 
+function toggleRecordButtons(enable) {
+  const recordButton = document.getElementById("record-button");
+  const stopButton = document.getElementById("stop-button");
+  const isAnswered = questions[Object.keys(questions)[currentIndex]].answered;
+
+  recordButton.disabled = !enable || isAnswered;
+  stopButton.disabled = !enable;
+}
+
 function hideContent() {
   Array.from(document.body.children).forEach((element) => {
-    if (!element.matches("header, .cut, #loader")) {
+    if (!element.matches("header, #loader", "#submitButton")) {
       element.classList.add("hidden");
     }
   });
@@ -149,7 +165,7 @@ function hideContent() {
 
 function showContent() {
   Array.from(document.body.children).forEach((element) => {
-    if (!element.matches("header, .cut, #timer")) {
+    if (!element.matches("header, #timer", "#submitButton")) {
       element.classList.remove("hidden");
     }
   });
@@ -223,6 +239,7 @@ function renderFlashcards() {
   });
 
   updateNavigation();
+  toggleRecordButtons(true);
 }
 
 function updateNavigation() {
@@ -252,6 +269,37 @@ async function sendMessage() {
   } catch (error) {
     console.error("Error sending message:", error);
   }
+}
+
+async function submit() {
+  try {
+    showLoader();
+    const response = await fetch(
+      "https://us-central1-speechbuddy-30390.cloudfunctions.net/submitSession",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.uid,
+          session_id: session,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Error submitting: ${response.status} ${response.statusText}`,
+      );
+    }
+    hideLoader();
+  } catch (error) {
+    console.error("Error submitting:", error);
+  }
+}
+
+function updateSubmitButtonState() {
+  const submitButton = document.getElementById("submitButton");
+  submitButton.disabled = answeredQuestionsCount < 3;
 }
 
 function showLoader() {

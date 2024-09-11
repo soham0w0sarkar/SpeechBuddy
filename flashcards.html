@@ -174,32 +174,6 @@
                 z-index: 1000;
             }
 
-            .cut {
-                position: fixed;
-                top: 0%;
-                right: 0%;
-                border: none;
-                cursor: pointer;
-            }
-
-            .cut svg {
-                width: 24px;
-                height: 24px;
-                fill: var(--button-hover-color);
-            }
-
-            .cut:hover svg {
-                fill: var(--highlight-color);
-            }
-
-            .cut:disabled {
-                background: none;
-            }
-
-            .cut:disabled svg {
-                fill: #ccc;
-            }
-
             @keyframes spin {
                 0% {
                     transform: translate(-50%, -50%) rotate(0deg);
@@ -214,13 +188,6 @@
         <header>
             <h1>Flashcards</h1>
         </header>
-        <button class="cut" id="cut" aria-label="Close">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                    d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.88 4.89a1 1 0 1 0 1.42 1.41L12 13.41l4.89 4.88a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.41z"
-                />
-            </svg>
-        </button>
         <main id="flashcardContainer">
             <!-- Flashcard content will be dynamically added here -->
         </main>
@@ -247,7 +214,7 @@
             <button id="generateButton" aria-label="Generate Cards">
                 Generate
             </button>
-            <button id="backButton" aria-label="Back to Home">Back</button>
+            <button id="submitButton" aria-label="Submit Button">Submit</button>
         </footer>
         <div id="loader"></div>
         <noscript>
