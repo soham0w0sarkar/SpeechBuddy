@@ -6,30 +6,47 @@
         <title>Render Popup</title>
         <style>
             body {
-                background: #6e28d9;
                 padding: 0 24px;
                 margin: 0;
                 height: 400px;
-                width:;
-                color: white;
+                background-color: white;
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
 
             button {
+                background: inherit;
                 width: 200px;
                 height: 40px;
-                background: none;
-                border: 2px solid white;
-                color: white;
+                color: black;
+                border: 2px solid #195c65;
                 border-radius: 20px;
                 box-shadow: 2px 2px 2px black;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+                font-size: 16px;
+            }
+
+            button:hover {
+                background-color: #195c65;
+                color: white;
+                box-shadow: 4px 4px 4px black;
+            }
+
+            button:focus {
+                outline: none;
+                box-shadow: 1px 1px 1px black;
+            }
+
+            button button:active {
+                transform: scale(0.98);
+                box-shadow: 0 0 0 black;
             }
         </style>
     </head>
     <body>
-        <button id="render">Render Popup!!</button>
+        <button id="render">Let's Go!!</button>
         <script src="firebase-app-compat.js"></script>
         <script src="firebase-auth-compat.js"></script>
         <script src="firebase-storage-compat.js"></script>

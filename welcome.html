@@ -1,20 +1,158 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Speech Buddy</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-  <div id="start-view">
-    <h2>Welcome to Speech Buddy</h2>
-    <body>Please allow us to record your audio so you can record your audios, for the answers of questions</body>
-  </div>
-  
-  <script src="firebase-app-compat.js"></script>
-  <script src="firebase-auth-compat.js"></script>
-  <script src="scripts/firebease-config.js"></script>
-  <!-- navigation -->
-  <script src="scripts/navigation.js"></script>
-  <script src="scripts/welcome.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Welcome</title>
+        <style>
+            :root {
+                --primary-color: #2196f3;
+                --secondary-color: #fece00;
+                --highlight-color: orange;
+                --button-hover-color: #195c56;
+                --background-color: #f0f0f0;
+                --text-color: white;
+                --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                --font-family: Arial, sans-serif;
+            }
+
+            body {
+                font-family: var(--font-family);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                width: 100vw;
+                margin: 0;
+                background-color: var(--background-color);
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background-color: var(--primary-color);
+                color: var(--text-color);
+                border-radius: 10px;
+                padding: 40px;
+                box-shadow: var(--box-shadow);
+                width: 100%;
+                height: 100%;
+                text-align: center;
+            }
+
+            .container h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+
+            .button-group {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .container button {
+                background-color: var(--button-hover-color);
+                color: var(--text-color);
+                border: none;
+                padding: 15px 30px;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 1rem;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .container button:hover {
+                background-color: var(--secondary-color);
+            }
+
+            #logoutButton {
+                position: fixed;
+                bottom: 1px;
+                right: 1px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+            }
+
+            #logoutButton:hover {
+                text-decoration: underline;
+                color: var(--highlight-color);
+            }
+
+            #loader {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border: 5px solid #f3f3f3;
+                border-radius: 50%;
+                border-top: 5px solid #3498db;
+                width: 30px;
+                height: 30px;
+                padding: 10px;
+                animation: spin 1s linear infinite;
+                z-index: 1000;
+            }
+
+            #loader img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                transform: translate(0, 0);
+                animation: anti-spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: translate(-50%, -50%) rotate(0deg);
+                }
+
+                100% {
+                    transform: translate(-50%, -50%) rotate(360deg);
+                }
+            }
+
+            @keyframes anti-spin {
+                0% {
+                    transform: translate(0, 0) rotate(360deg);
+                }
+
+                100% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Welcome!</h2>
+            <div class="button-group">
+                <button id="openDashboardButton">Go to Dashboard</button>
+            </div>
+        </div>
+        <button id="logoutButton">Logout</button>
+        <div id="loader" class="hidden">
+            <img src="assets/logo_128.png" alt="Loading..." />
+        </div>
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-storage-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="/scripts/welcome.js"></script>
+        <script src="/scripts/openDashboard.js"></script>
+    </body>
 </html>

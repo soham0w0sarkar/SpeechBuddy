@@ -34,8 +34,10 @@ function login() {
       document.getElementById("login-error-message").textContent =
         "Login successful";
 
-      if (subscribed) {
+      if (subscribed && firebaseDoc.tier === "buddy") {
         navigateTo("home.html");
+      } else if (subscribed && firebaseDoc.tier === "admin") {
+        navigateTo("welcome.html");
       } else {
         navigateTo("convince.html");
       }

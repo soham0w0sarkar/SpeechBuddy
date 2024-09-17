@@ -7,11 +7,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (pageUrl.includes("youtube.com/watch")) {
           const videoDetails = await getVideoDetails();
           console.log("Video details fetched:", videoDetails);
-          sendResponse({ content: videoDetails });
+          sendResponse({ content: videoDetails, type: "video" });
         } else {
           const scrapedText = scrapePageContent();
           console.log("Page content scraped:", scrapedText);
-          sendResponse({ content: scrapedText });
+          sendResponse({ content: scrapedText, type: "text" });
         }
       }
     } catch (error) {
@@ -49,12 +49,10 @@ const getVideoDetails = async () => {
       "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
     );
 
-    // If the description is not found, try to click the #expand element and fetch the description again
     if (!descriptionElement) {
       const expandButton = document.querySelector("#expand");
       if (expandButton) {
         expandButton.click();
-        // Wait a moment for the description to load after expanding
         await new Promise((resolve) => setTimeout(resolve, 500));
         descriptionElement = await waitForElement(
           "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
@@ -72,7 +70,6 @@ const getVideoDetails = async () => {
       .replace(/\s+/g, " ")
       .trim();
 
-    // Limit description to 1000 tokens
     const descriptionTokens = description
       .split(/\s+/)
       .filter((token) => token.trim().length > 0);

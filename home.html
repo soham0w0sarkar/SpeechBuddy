@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>Firebase Auth Extension - Home</title>
+        <title>Home</title>
         <link rel="stylesheet" type="text/css" href="style.css" />
     </head>
     <body>
@@ -26,8 +26,8 @@
                         Select Question Type:
                     </label>
                     <select id="questionType">
-                        <option value="specific">Specific</option>
                         <option value="generic">Generic</option>
+                        <option value="specific">Specific</option>
                     </select>
                     <label for="gradeLevel">Select Grade Level:</label>
                     <select id="gradeLevel">
@@ -48,18 +48,14 @@
                 </div>
             </div>
             <div class="footer">
-                <button
-                    id="dashboard-button"
-                    class="text-button left-align hidden"
-                >
-                    Open Dashboard
-                </button>
                 <button id="logout-button" class="text-button right-align">
                     Logout
                 </button>
             </div>
         </div>
-        <div id="loader" class="hidden"></div>
+        <div id="loader">
+            <img src="assets/logo_32.png" alt="Loading..." />
+        </div>
         <script src="firebase-app-compat.js"></script>
         <script src="firebase-auth-compat.js"></script>
         <script src="firebase-storage-compat.js"></script>

@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!isSubscribed) {
       const recordButton = document.getElementById("record-button");
       if (recordButton) recordButton.style.display = "none";
+    } else {
+      const cut = document.getElementById("cut");
+      if (cut) cut.style.display = "none";
     }
 
     attachEventListeners({
@@ -33,6 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "stop-button": stopRecording,
       generateButton: fetchFlashcards,
       submitButton: submit,
+      cut: sendMessage,
     });
 
     await fetchFlashcards();
@@ -103,8 +107,7 @@ function stopRecording() {
   const timer = document.getElementById("timer");
 
   mediaRecorder.stop();
-  recordButton.style.display = "inline-block";
-  stopButton.style.display = "none";
+  stopButton.style.display = "none"; // Hide stop button when recording stops
   timer.style.display = "none";
   timer.textContent = "00:00";
 
@@ -149,10 +152,15 @@ function toggleButtons(disable) {
 function toggleRecordButtons(enable) {
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
-  const isAnswered = questions[Object.keys(questions)[currentIndex]].answered;
+  const currentQuestion = questions[Object.keys(questions)[currentIndex]];
 
-  recordButton.disabled = !enable || isAnswered;
-  stopButton.disabled = !enable;
+  if (currentQuestion.answered) {
+    recordButton.disabled = true;
+  } else {
+    recordButton.disabled = !enable;
+  }
+
+  stopButton.style.display = "none";
 }
 
 function hideContent() {
@@ -200,6 +208,12 @@ async function fetchFlashcards() {
     const data = await response.json();
     questions = data.questions;
     session = data.session;
+
+    answeredQuestionsCount = 0;
+    recordedChunks = [];
+    mediaRecorder = null;
+
+    toggleRecordButtons(true);
   } catch (error) {
     console.error("Error fetching flashcards:", error);
   } finally {
@@ -274,24 +288,28 @@ async function sendMessage() {
 async function submit() {
   try {
     showLoader();
-    const response = await fetch(
-      "https://us-central1-speechbuddy-30390.cloudfunctions.net/submitSession",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: user.uid,
-          session_id: session,
-        }),
-      },
-    );
 
-    if (!response.ok) {
-      throw new Error(
-        `Error submitting: ${response.status} ${response.statusText}`,
+    if (isSubscribed) {
+      const response = await fetch(
+        "https://us-central1-speechbuddy-30390.cloudfunctions.net/submitSession",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.uid,
+            session_id: session,
+          }),
+        },
       );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error submitting: ${response.status} ${response.statusText}`,
+        );
+      }
     }
     hideLoader();
+    sendMessage();
   } catch (error) {
     console.error("Error submitting:", error);
   }
@@ -299,15 +317,19 @@ async function submit() {
 
 function updateSubmitButtonState() {
   const submitButton = document.getElementById("submitButton");
+  if (!isSubscribed) {
+    submitButton.style.display = "none";
+    return;
+  }
   submitButton.disabled = answeredQuestionsCount < 3;
 }
 
 function showLoader() {
   const loader = document.getElementById("loader");
-  if (loader) loader.style.display = "block";
+  if (loader) loader.classList.remove("hidden");
 }
 
 function hideLoader() {
   const loader = document.getElementById("loader");
-  if (loader) loader.style.display = "none";
+  if (loader) loader.classList.add("hidden");
 }

@@ -10,6 +10,8 @@
                 --secondary-color: #fece00;
                 --highlight-color: orange;
                 --button-hover-color: #195c56;
+                --button-hover-lighter: #3b867e;
+                --secondary-hover-color: #ffe34f;
                 --background-color: #f0f0f0;
                 --text-color: white;
                 --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -19,6 +21,9 @@
 
             * {
                 transition: all var(--transition-speed) ease-in-out;
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
             }
 
             body {
@@ -26,22 +31,49 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: center;
-                height: 100vh;
-                width: 100vw;
+                justify-content: space-between;
+                min-height: 100vh;
                 margin: 0;
                 background-color: var(--background-color);
             }
 
-            header {
-                text-align: center;
+            #cut {
+                display: block;
+                width: 30px;
+                height: 30px;
                 position: fixed;
-                top: 0;
+                top: 2px;
+                right: 2px;
+                font-size: 2rem;
+                color: var(--button-hover-color);
+                cursor: pointer;
+                z-index: 100;
+                padding: 5px;
+                background-color: var(--background-color);
+            }
+
+            header {
+                color: var(--button-hover-color);
+                text-align: center;
                 width: 100%;
+                padding: 10px;
+                background-color: var(--background-color);
+                z-index: 10;
+                position: sticky;
+                top: 0;
             }
 
             header h1 {
                 font-size: 2rem;
+                margin: 0;
+            }
+
+            #flashcardContainer {
+                width: 75%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-grow: 1;
             }
 
             .card {
@@ -53,14 +85,11 @@
                 border-radius: 10px;
                 box-shadow: var(--box-shadow);
                 transition: transform 0.3s ease-in-out;
+                text-align: center;
             }
 
             .card.current {
                 transform: scale(1.1);
-            }
-
-            .card-content {
-                text-align: center;
             }
 
             .card.show-answer {
@@ -85,7 +114,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                margin-top: 20px;
+                margin-top: 10px;
             }
 
             .navigation button {
@@ -100,7 +129,7 @@
             }
 
             .navigation button:hover {
-                background-color: var(--primary-color);
+                background-color: var(--button-hover-lighter);
             }
 
             .record {
@@ -111,28 +140,28 @@
                 cursor: pointer;
                 border-radius: 5px;
                 font-size: 1rem;
-                margin-top: 20px;
+                margin-top: 10px;
             }
 
             .record:hover {
-                background-color: var(--button-hover-color);
+                background-color: var(--secondary-hover-color);
             }
 
             #timer {
                 font-weight: semibold;
                 font-size: 1.25rem;
-            }
-
-            #flashcardContainer {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                margin-top: 1rem;
             }
 
             footer {
-                margin-top: 20px;
+                width: 100%;
+                padding: 10px;
                 text-align: center;
+                background-color: var(--background-color);
+                box-shadow: var(--box-shadow);
+                z-index: 10;
+                position: sticky;
+                bottom: 0;
             }
 
             footer button {
@@ -140,14 +169,14 @@
                 color: var(--text-color);
                 border: none;
                 padding: 10px 20px;
-                margin-bottom: 10px;
                 cursor: pointer;
                 border-radius: 5px;
                 font-size: 1rem;
+                margin-bottom: 10px;
             }
 
             footer button:hover {
-                background-color: var(--primary-color);
+                background-color: var(--button-hover-lighter);
             }
 
             button:disabled {
@@ -167,30 +196,49 @@
                 border: 5px solid #f3f3f3;
                 border-radius: 50%;
                 border-top: 5px solid #3498db;
-                width: 20px;
-                height: 20px;
+                width: 50px;
+                height: 50px;
                 padding: 10px;
                 animation: spin 1s linear infinite;
                 z-index: 1000;
+            }
+
+            #loader img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                transform: translate(0, 0);
+                animation: anti-spin 1s linear infinite;
             }
 
             @keyframes spin {
                 0% {
                     transform: translate(-50%, -50%) rotate(0deg);
                 }
+
                 100% {
                     transform: translate(-50%, -50%) rotate(360deg);
                 }
             }
+
+            @keyframes anti-spin {
+                0% {
+                    transform: translate(0, 0) rotate(360deg);
+                }
+
+                100% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+            }
         </style>
     </head>
+
     <body>
         <header>
             <h1>Flashcards</h1>
         </header>
-        <main id="flashcardContainer">
-            <!-- Flashcard content will be dynamically added here -->
-        </main>
+        <span id="cut">&times;</span>
+        <main id="flashcardContainer"></main>
         <div class="navigation">
             <button id="previousBtn" aria-label="Previous Card">
                 Previous
@@ -201,7 +249,7 @@
         <button class="record" id="record-button" aria-label="Record Audio">
             Record Audio
         </button>
-        <span id="timer" class="hidden">00:00</span>
+        <span id="timer">00:00</span>
         <button
             class="record"
             id="stop-button"
@@ -216,7 +264,9 @@
             </button>
             <button id="submitButton" aria-label="Submit Button">Submit</button>
         </footer>
-        <div id="loader"></div>
+        <div id="loader" class="hidden">
+            <img src="assets/logo_128.png" alt="Loading..." />
+        </div>
         <noscript>
             <p>JavaScript is required to view this content.</p>
         </noscript>
@@ -225,7 +275,6 @@
         <script src="firebase-storage-compat.js"></script>
         <script src="scripts/firebease-config.js"></script>
         <script src="firebase-firestore-compat.js"></script>
-        <script src="/scripts/loader.js"></script>
         <script src="/scripts/navigation.js"></script>
         <script src="/scripts/flashcards.js"></script>
     </body>

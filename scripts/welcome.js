@@ -1,13 +1,24 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  navigator.mediaDevices
-    .getUserMedia({ audio: true })
-    .then((stream) => {
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.stop();
-      //close tab
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.tabs.remove(tabs[0].id);
+  firebase.auth().onAuthStateChanged(async () => {
+    const openDashboardButton = document.querySelector("#openDashboardButton");
+
+    openDashboardButton.addEventListener("click", () => {
+      showLoader();
+      openDashboard();
+    });
+
+    document
+      .getElementById("logoutButton")
+      .addEventListener("click", function () {
+        firebase
+          .auth()
+          .signOut()
+          .then(() => {
+            window.location.href = "/login.html";
+          })
+          .catch((error) => {
+            console.error("Error logging out:", error);
+          });
       });
-    })
-    .catch((err) => {});
+  });
 });

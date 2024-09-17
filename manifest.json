@@ -2,10 +2,16 @@
   "manifest_version": 3,
   "name": "SpeechBuddy",
   "version": "1.0.1",
-  "description": "A Chrome extension designed to make speech therapy fun by tailoring speech questions into the media content your child is already interested in!",
+  "description": "A Chrome extension that makes speech therapy fun by tailoring questions to the media your child enjoys!",
   "permissions": ["storage", "tabs"],
   "action": {
     "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "assets/logo_16.png",
+    "32": "assets/logo_32.png",
+    "64": "assets/logo_64.png",
+    "128": "assets/logo_128.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -14,24 +20,18 @@
     {
       "run_at": "document_end",
       "matches": ["<all_urls>"],
-      "js": ["content.js", "scrapper.js"]
+      "js": ["contentScript/content.js", "contentScript/scrapper.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["*.html"],
-      "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["*.js"],
-      "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["*.css"],
-      "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["scripts/*.js"],
+      "resources": [
+        "*.html",
+        "*.js",
+        "*.css",
+        "scripts/*.js",
+        "assets/logo_128.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
