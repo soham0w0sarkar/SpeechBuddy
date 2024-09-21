@@ -3,7 +3,7 @@
   "name": "SpeechBuddy",
   "version": "1.0.1",
   "description": "A Chrome extension that makes speech therapy fun by tailoring questions to the media your child enjoys!",
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage"],
   "action": {
     "default_popup": "popup.html"
   },

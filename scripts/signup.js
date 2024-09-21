@@ -90,5 +90,3 @@ async function cleanupFailedSignup() {
     await firebase.auth().signOut();
   }
 }
-
-async function getInvitationCode() {}

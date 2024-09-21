@@ -78,7 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document
         .getElementById("submit-invite-code")
         .addEventListener("click", async () => {
+          showLoader();
           await handleInvitationCodeSubmission(user);
+          hideLoader();
         });
 
       document
