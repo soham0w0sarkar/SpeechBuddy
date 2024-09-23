@@ -25,7 +25,7 @@ const additionalParams = {
   aux: null,
   morpheme: null,
   syntax: null,
-  wh: null,
+  wh: [],
   conjunction: null,
   coordinating: null,
   subordination: null,
@@ -340,7 +340,7 @@ function generateCheckboxes(options, name) {
   return options
     .map(
       (option, idx) => `
-        <span class="checkbox">
+      <span class="checkbox" id="${name}">
             <input type="checkbox" id="${option}" name="${name} ${idx}" value="${option}">
             <label for="${option}">${option}</label>
         </span>
@@ -408,18 +408,17 @@ document.addEventListener("change", function (event) {
       }
 
       if (!document.getElementById("wh")) {
-        additionalFields = generateDropdown("wh", optionsMap["wh"]);
+        additionalFields = generateCheckboxes(
+          multiSelectOptionsMap["wh"],
+          "wh",
+        );
         document
           .getElementById("additionalSyntaxFields")
           .insertAdjacentHTML("beforeend", additionalFields);
       }
     } else if (value === "Conjunctions") {
-      const whLabel = document.querySelector("label[for=wh]");
-      const whElement = document.getElementById("wh");
-      if (whElement) {
-        whLabel.remove();
-        whElement.remove();
-      }
+      const whElements = document.querySelectorAll("span.checkbox#wh");
+      whElements.forEach((element) => element.remove());
 
       if (!document.getElementById("conjunction")) {
         additionalFields = generateDropdown(
@@ -429,6 +428,15 @@ document.addEventListener("change", function (event) {
         document
           .getElementById("additionalSyntaxFields")
           .insertAdjacentHTML("beforeend", additionalFields);
+      }
+    } else {
+      const whElements = document.querySelectorAll("span.checkbox#wh");
+      whElements.forEach((element) => element.remove());
+      const conjunctionLabel = document.querySelector("label[for=conjunction]");
+      const conjunctionElement = document.getElementById("conjunction");
+      if (conjunctionElement) {
+        conjunctionLabel.remove();
+        conjunctionElement.remove();
       }
     }
   }
@@ -617,6 +625,8 @@ const onContinue = async (isSubscribed) => {
       additionalParams[key] = selectedValues[key];
     } else if (key.split(" ")[0] === "letter") {
       additionalParams["letter"].push(selectedValues[key]);
+    } else if (key.split(" ")[0] === "wh") {
+      additionalParams["wh"].push(selectedValues[key]);
     }
   });
 
@@ -742,8 +752,8 @@ const goalOptionsMap = {
 
 const pillarOptions = [
   "Articulation",
-  "Expressive",
   "Phonology",
+  "Expressive",
   "Receptive",
   "Pragmatics",
   "Fluency",
@@ -811,7 +821,6 @@ const optionsMap = {
     "Comparative",
     "Conjunctions",
   ],
-  wh: ["who", "what", "where", "when", "why", "how"],
   conjunction: ["Coordinating", "Subordination"],
   coordinating: ["For", "And", "Nor", "But", "Or", "Yet", "So"],
   subordination: ["Although", "Because", "Since", "Unless", "While", "If"],
@@ -857,7 +866,8 @@ const optionsMap = {
 };
 
 const multiSelectOptionsMap = {
-  consonant_clusters: ["r blens", "l blends", "s blends"],
+  consonant_clusters: ["r blends", "l blends", "s blends"],
+  wh: ["who", "what", "where", "when", "why", "how"],
   letter: [
     "p",
     "m",
@@ -910,6 +920,37 @@ function generatePrompt(goal, gradeLevel, pillar, additionalParams) {
         return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using the ${additionalParams.sequence} in ${additionalParams.events}`;
       } else if (goal === "Definitions") {
         return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in ${additionalParams.definition}`;
+      } else if (goal === "Morphology") {
+        if (additionalParams.marker && additionalParams.activity) {
+          if (additionalParams.marker === "Verbs") {
+            if (additionalParams.verb === "Tense") {
+              return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using marker ${additionalParams.marker} in ${additionalParams.verb} with a ${additionalParams.tense} tense in ${additionalParams.activity}`;
+            } else if (additionalParams.verb === "Auxillary Verbs") {
+              return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using marker ${additionalParams.marker} in ${additionalParams.verb} with a ${additionalParams.aux}conjugation in ${additionalParams.activity}`;
+            }
+          }
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} using marker ${additionalParams.marker} in ${additionalParams.activity}`;
+        }
+      } else if (goal === "Syntax") {
+        if (additionalParams.syntax === "Wh- Questions") {
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} starting with ${additionalParams.wh.map((wh) => wh).join(", ")} in ${additionalParams.activity}`;
+        } else if (additionalParams.syntax === "Conjunctions") {
+          if (additionalParams.conjunction === "Coordinating") {
+            return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} using the ${additionalParams.conjunction} targeting ${additionalParams.coordinating} in ${additionalParams.activity}`;
+          } else if (additionalParams.conjunction === "Subordinating") {
+            return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} using the ${additionalParams.conjunction} targeting ${additionalParams.subordinating} in ${additionalParams.activity}`;
+          }
+        } else {
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} in ${additionalParams.activity}`;
+        }
+      } else if (goal === "Narrative") {
+        if (additionalParams.narrative === "Story Elements") {
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of a ${additionalParams.narrative} by identifying ${additionalParams.storyElement}`;
+        } else if (additionalParams.narrative === "Retelling") {
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of a ${additionalParams.narrative} by identifying ${additionalParams.retelling}`;
+        }
+      } else if (goal === "Figurative Language") {
+        return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} by identifying ${additionalParams.figurative} in ${additionalParams.figurativeActivity}`;
       }
       return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal}`;
 

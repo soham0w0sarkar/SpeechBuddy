@@ -1,5 +1,4 @@
 async function isSubscribed(customerID) {
-  // https://us-central1-speechbuddy-30390.cloudfunctions.net/getSubscriptions
   try {
     const response = await fetch(
       "https://us-central1-speechbuddy-30390.cloudfunctions.net/getSubscriptions?customerID=" +
@@ -12,7 +11,6 @@ async function isSubscribed(customerID) {
       console.error("Stripe Get Subscriptions response was not ok");
       return null;
     }
-    // response in list
     const data = await response.json();
     return data.data.length > 0;
   } catch (e) {

@@ -7,7 +7,7 @@ const openDashboard = async () => {
     return;
   }
   const data = getUserFromCookie();
-  const url = new URL("https://speech-buddy-lyart.vercel.app");
+  const url = new URL("http://localhost:5173/");
   url.searchParams.append("token", token);
   url.searchParams.append("customerId", data.customerId);
   window.open(url.href, "_blank");
