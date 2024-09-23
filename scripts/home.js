@@ -642,11 +642,12 @@ const onContinue = async (isSubscribed) => {
   if (questionType === "specific") {
     const scrapedData = await sendScrapeRequest();
 
+    console.log(scrapedData);
+
     if (scrapedData && scrapedData.content) {
       if (scrapedData.type === "video") {
         prompt += ` The questions should be based on the following video information:
-           Title: "${scrapedData.content.title}",
-           Description: "${scrapedData.content.description}".
+           video Transcripts: "${scrapedData.content}",
            Focus on the key themes in the video description to generate insightful questions.`;
       } else if (scrapedData.type === "text") {
         prompt += ` The questions should be based on the following artical :

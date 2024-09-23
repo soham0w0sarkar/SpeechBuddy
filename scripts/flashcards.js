@@ -107,7 +107,7 @@ function stopRecording() {
   const timer = document.getElementById("timer");
 
   mediaRecorder.stop();
-  stopButton.style.display = "none"; // Hide stop button when recording stops
+  stopButton.style.display = "none";
   timer.style.display = "none";
   timer.textContent = "00:00";
 
@@ -212,7 +212,7 @@ async function fetchFlashcards() {
     answeredQuestionsCount = 0;
     recordedChunks = [];
     mediaRecorder = null;
-
+    currentIndex = 0;
     toggleRecordButtons(true);
   } catch (error) {
     console.error("Error fetching flashcards:", error);

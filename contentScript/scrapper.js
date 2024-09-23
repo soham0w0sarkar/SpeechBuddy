@@ -5,12 +5,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const pageUrl = window.location.href;
 
         if (pageUrl.includes("youtube.com/watch")) {
-          const videoDetails = await getVideoDetails();
-          console.log("Video details fetched:", videoDetails);
-          sendResponse({ content: videoDetails, type: "video" });
+          const content = await getVideoDetails();
+          sendResponse({ content, type: "video" });
         } else {
           const scrapedText = scrapePageContent();
-          console.log("Page content scraped:", scrapedText);
           sendResponse({ content: scrapedText, type: "text" });
         }
       }
@@ -38,48 +36,43 @@ const scrapePageContent = () => {
   const limitedTokens = tokens.slice(0, maxTokens);
 
   const result = limitedTokens.join(" ");
-  console.log("Limited page content length:", result.length);
   return result;
 };
 
 const getVideoDetails = async () => {
   try {
-    const titleElement = await waitForElement("#title > h1");
-    let descriptionElement = await waitForElement(
-      "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
-    );
-
-    if (!descriptionElement) {
-      const expandButton = document.querySelector("#expand");
-      if (expandButton) {
-        expandButton.click();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        descriptionElement = await waitForElement(
-          "#description-inline-expander > yt-attributed-string > span > span:nth-child(1)",
-        );
-      }
+    const expandButton = await waitForElement("#expand");
+    if (expandButton) {
+      expandButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    const title = titleElement ? titleElement.innerText : "Title not found";
+    const primaryButton = await waitForElement(
+      "#primary-button > ytd-button-renderer > yt-button-shape > button",
+    );
+    if (primaryButton) {
+      primaryButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
 
-    let description = descriptionElement
-      ? descriptionElement.innerText
-      : "Description not found";
-    description = description
-      .replace(/https?:\/\/\S+/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    const panelElement = await waitForElement(
+      "#content > ytd-transcript-renderer",
+    );
 
-    const descriptionTokens = description
+    let panelContent = panelElement
+      ? panelElement.innerText
+      : "Panel content not found";
+
+    let tokens = panelContent
       .split(/\s+/)
       .filter((token) => token.trim().length > 0);
-    const limitedDescriptionTokens = descriptionTokens.slice(0, 1000);
-    description = limitedDescriptionTokens.join(" ");
+    let limitedTokens = tokens.slice(0, 1000);
 
-    return {
-      title: title,
-      description: description,
-    };
+    const content = limitedTokens.join(" ");
+
+    console.log("Content:", content);
+
+    return content;
   } catch (error) {
     console.error("Error in getVideoDetails:", error);
     return { error: error.message };
