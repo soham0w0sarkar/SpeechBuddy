@@ -4,13 +4,6 @@ async function start() {
       const customer = await fetchFirebaseData(user.uid);
       const subcribed = await isSubscribed(customer.customerId);
 
-      if (subcribed && customer.tier === "free") {
-        await updateFirebaseData(user.uid, { tier: "admin" });
-        navigateTo("welcome.html");
-      }
-
-      console;
-
       if (subcribed && customer.tier === "admin") {
         navigateTo("welcome.html");
       } else if (subcribed && customer.tier === "buddy") {

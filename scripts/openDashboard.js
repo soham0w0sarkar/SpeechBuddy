@@ -7,7 +7,7 @@ const openDashboard = async () => {
     return;
   }
   const data = getUserFromCookie();
-  const url = new URL("http://localhost:5173/");
+  const url = new URL("https://speechbuddy-dashboard.web.app/");
   url.searchParams.append("token", token);
   url.searchParams.append("customerId", data.customerId);
   window.open(url.href, "_blank");

@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document
       .getElementById("logoutButton")
       .addEventListener("click", function () {
+        deleteUserCookie();
         firebase
           .auth()
           .signOut()

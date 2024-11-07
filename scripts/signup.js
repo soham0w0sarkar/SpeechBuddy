@@ -32,6 +32,11 @@ async function signup() {
     });
 
     hideLoader();
+    saveUserToCookie({
+      email,
+      customerId: id,
+      tier: "free",
+    });
     clearSignupFields();
     displaySignupMessage("Signup successful");
     navigateTo("invitation.html");

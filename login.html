@@ -1,31 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Speech Buddy</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-  <h2>Welcome to Speech Buddy</h2>
-  <div id="login-view">
-    
-    <input type="email" id="login-email" placeholder="Email">
-    <input type="password" id="login-password" placeholder="Password">
-    <button id="forgot-password-button" class="text-button right-align">Forgot Password?</button>
-    <button id="login-button">Login</button>
-    <button id="signup-button" class="text-button center">Sign Up</button>
-   
-    <div id="login-error-message" class="error-message"></div>
-  </div>
-  <div id="loader" class="hidden"></div>
-  <script src="firebase-app-compat.js"></script>
-  <script src="firebase-auth-compat.js"></script>
-  <script src="firebase-firestore-compat.js"></script>
-  <script src="scripts/firebease-config.js"></script>
-  <script src="scripts/fetch-user-from-firebase.js"></script>
-  <script src="scripts/is-user-subscribed.js"></script>
-  <script src="scripts/cookies.js"></script>
-  <script src="scripts/loader.js"></script>
-  <script src="scripts/navigation.js"></script>
-  <script src="scripts/login.js"></script>
-</body>
+    <head>
+        <title>Speech Buddy</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
+    <body>
+        <h2>Welcome to Speech Buddy</h2>
+        <div id="login-view">
+            <input type="email" id="login-email" placeholder="Email" />
+            <input type="password" id="login-password" placeholder="Password" />
+            <button id="forgot-password-button" class="text-button right-align">
+                Forgot Password?
+            </button>
+            <button id="login-button">Login</button>
+            <button id="signup-button" class="text-button center">
+                Sign Up
+            </button>
+
+            <div id="login-error-message" class="error-message"></div>
+        </div>
+        <div id="loader" class="hidden">
+            <img src="assets/logo_32.png" alt="Loading..." />
+        </div>
+        <script src="firebase-app-compat.js"></script>
+        <script src="firebase-auth-compat.js"></script>
+        <script src="firebase-firestore-compat.js"></script>
+        <script src="scripts/firebease-config.js"></script>
+        <script src="scripts/fetch-user-from-firebase.js"></script>
+        <script src="scripts/is-user-subscribed.js"></script>
+        <script src="scripts/cookies.js"></script>
+        <script src="scripts/loader.js"></script>
+        <script src="scripts/navigation.js"></script>
+        <script src="scripts/login.js"></script>
+    </body>
 </html>

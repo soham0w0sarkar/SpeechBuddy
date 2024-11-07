@@ -1,6 +1,6 @@
 let mediaRecorder;
 let recordedChunks = [];
-
+let currentUrl = "";
 let selectedGradeLevel = "";
 let selectedPillar = "";
 let selectedGoal = "";
@@ -51,6 +51,24 @@ let questionType = "generic";
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
+      showLoader();
+
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      if (tabs.length > 0) {
+        currentUrl = tabs[0].url;
+      }
+
+      const { data } = await chrome.storage.local.get(["data"]);
+
+      if (data?.currentUrl && data.currentUrl === currentUrl) {
+        navigateTo("renderPopup.html");
+      }
+
+      hideLoader();
+
       const logoutButton = document.getElementById("logout-button");
 
       let gradeLevel, pillar, goal;
@@ -663,6 +681,8 @@ const onContinue = async (isSubscribed) => {
   params += `&goal=${selectedGoal}`;
   params += `&subscribedUser=${isSubscribed.toString()}`;
 
+  console.log(prompt);
+
   hideLoader();
   navigateTo("renderPopup.html?" + params);
 };
@@ -677,9 +697,12 @@ const populateDropdown = (selectElement, options, name) => {
   });
 };
 
-const signout = () => {
+const signout = async () => {
   showLoader();
   deleteUserCookie();
+
+  await chrome.storage.local.clear();
+
   firebase
     .auth()
     .signOut()

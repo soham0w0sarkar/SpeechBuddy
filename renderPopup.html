@@ -15,7 +15,7 @@
                 align-items: center;
             }
 
-            button {
+            #render {
                 background: inherit;
                 width: 200px;
                 height: 40px;
@@ -28,24 +28,40 @@
                 font-size: 16px;
             }
 
-            button:hover {
+            #render:hover {
                 background-color: #195c65;
                 color: white;
                 box-shadow: 4px 4px 4px black;
             }
 
-            button:focus {
+            #render:focus {
                 outline: none;
                 box-shadow: 1px 1px 1px black;
             }
 
-            button button:active {
+            #render #render:active {
                 transform: scale(0.98);
                 box-shadow: 0 0 0 black;
+            }
+
+            #back {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                background: inherit;
+                color: #195c65;
+                border: none;
+                text-decoration: underline;
+                font-size: 18px;
+            }
+
+            #back:hover {
+                color: black;
             }
         </style>
     </head>
     <body>
+        <button id="back">Home</button>
         <button id="render">Let's Go!!</button>
         <script src="firebase-app-compat.js"></script>
         <script src="firebase-auth-compat.js"></script>

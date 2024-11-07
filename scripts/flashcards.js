@@ -130,8 +130,10 @@ async function uploadAudio(audioBlob) {
     const downloadURL = await audioFileRef.getDownloadURL();
     console.log("File available at", downloadURL);
 
-    questions[Object.keys(questions)[currentIndex]].answered = true;
-    answeredQuestionsCount++;
+    if (!questions[currentIndex].answered) {
+      questions[currentIndex].answered = true;
+      answeredQuestionsCount++;
+    }
 
     toggleRecordButtons(false);
   } catch (error) {
@@ -143,24 +145,29 @@ async function uploadAudio(audioBlob) {
   }
 }
 
-function toggleButtons(disable) {
-  document
-    .querySelectorAll("button")
-    .forEach((button) => (button.disabled = disable));
-}
-
 function toggleRecordButtons(enable) {
+  if (!isSubscribed) return;
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
-  const currentQuestion = questions[Object.keys(questions)[currentIndex]];
+  const currentQuestion = questions[currentIndex];
+
+  console.log("currentQuestion", currentQuestion);
 
   if (currentQuestion.answered) {
+    recordButton.style.display = "inline-block";
     recordButton.disabled = true;
   } else {
+    recordButton.style.display = "inline-block";
     recordButton.disabled = !enable;
   }
 
   stopButton.style.display = "none";
+}
+
+function toggleButtons(disable) {
+  document
+    .querySelectorAll("button")
+    .forEach((button) => (button.disabled = disable));
 }
 
 function hideContent() {
@@ -206,8 +213,16 @@ async function fetchFlashcards() {
     }
 
     const data = await response.json();
-    questions = data.questions;
+
+    questions = Object.entries(data.questions).map(([question, answer]) => ({
+      question,
+      answer,
+      answered: false,
+    }));
+
     session = data.session;
+
+    console.log("Fetched flashcards:", questions);
 
     answeredQuestionsCount = 0;
     recordedChunks = [];
@@ -226,8 +241,7 @@ function renderFlashcards() {
   const flashcardContainer = document.getElementById("flashcardContainer");
   flashcardContainer.innerHTML = "";
 
-  const question = Object.keys(questions)[currentIndex];
-  const answer = questions[question];
+  const currentQuestion = questions[currentIndex];
 
   const card = document.createElement("div");
   card.classList.add("card", "current");
@@ -236,10 +250,10 @@ function renderFlashcards() {
   cardContent.classList.add("card-content");
 
   const questionElement = document.createElement("h2");
-  questionElement.textContent = question;
+  questionElement.textContent = currentQuestion.question;
 
   const answerElement = document.createElement("p");
-  answerElement.textContent = answer;
+  answerElement.textContent = currentQuestion.answer;
   answerElement.classList.add("answer");
 
   cardContent.append(questionElement, answerElement);
@@ -258,18 +272,16 @@ function renderFlashcards() {
 
 function updateNavigation() {
   const currentIndexElem = document.getElementById("currentIndex");
-  currentIndexElem.textContent = `${currentIndex + 1} / ${Object.keys(questions).length}`;
+  currentIndexElem.textContent = `${currentIndex + 1} / ${questions.length}`;
 }
 
 function nextFlashcard() {
-  currentIndex = (currentIndex + 1) % Object.keys(questions).length;
+  currentIndex = (currentIndex + 1) % questions.length;
   renderFlashcards();
 }
 
 function previousFlashcard() {
-  currentIndex =
-    (currentIndex - 1 + Object.keys(questions).length) %
-    Object.keys(questions).length;
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
   renderFlashcards();
 }
 
