@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SpeechBuddy",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Chrome extension that makes speech therapy fun by tailoring questions to the media your child enjoys!",
   "permissions": ["storage", "activeTab"],
   "action": {

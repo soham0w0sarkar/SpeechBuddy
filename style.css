@@ -154,7 +154,12 @@ button:disabled {
 .footer {
     width: 100%;
     display: flex;
+    align-items: space-between;
     justify-content: space-between;
+}
+
+.hidden {
+    display: none;
 }
 
 @keyframes spin {

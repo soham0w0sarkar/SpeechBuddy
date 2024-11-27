@@ -37,7 +37,16 @@ function login() {
       if (subscribed && firebaseDoc.tier === "buddy") {
         navigateTo("home.html");
       } else if (subscribed && firebaseDoc.tier === "admin") {
-        navigateTo("welcome.html");
+        let access = false;
+        firebaseDoc.buddyList.forEach((buddyId) => {
+          if (user.uid === buddyId) {
+            navigateTo("home.html");
+            access = true;
+          }
+        });
+        if (!access) {
+          navigateTo("welcome.html");
+        }
       } else {
         navigateTo("convince.html");
       }

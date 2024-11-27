@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cut) cut.style.display = "none";
     }
 
+    setupActivityListeners();
+
     attachEventListeners({
       nextBtn: nextFlashcard,
       previousBtn: previousFlashcard,
@@ -43,6 +45,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     showContent();
   });
 });
+
+const throttle = (func, delay) => {
+  let lastCallTime = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastCallTime >= delay) {
+      lastCallTime = now;
+      func.apply(this, args);
+    }
+  };
+};
+
+const sendResetMessage = async () => {
+  try {
+    console.log("Stopping inactivity timer...");
+    const [activeTab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    const response = await chrome.tabs.sendMessage(activeTab.id, {
+      action: "resetTimer",
+    });
+    console.log(response.message);
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
+};
+
+const throttledStopInactivityTimer = throttle(sendResetMessage, 9000);
+
+const setupActivityListeners = () => {
+  ["mouseover", "mouseout", "click", "keydown"].forEach((event) => {
+    document.querySelectorAll("*").forEach((element) => {
+      element.addEventListener(event, throttledStopInactivityTimer);
+    });
+  });
+};
 
 const loadState = async () => {
   try {
@@ -102,7 +141,6 @@ function handleDataAvailable(event) {
 }
 
 function stopRecording() {
-  const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
   const timer = document.getElementById("timer");
 
@@ -165,9 +203,10 @@ function toggleRecordButtons(enable) {
 }
 
 function toggleButtons(disable) {
-  document
-    .querySelectorAll("button")
-    .forEach((button) => (button.disabled = disable));
+  document.querySelectorAll("button").forEach((button) => {
+    if (button.matches("#record-button")) return;
+    button.disabled = disable;
+  });
 }
 
 function hideContent() {
@@ -261,6 +300,7 @@ function renderFlashcards() {
   flashcardContainer.appendChild(card);
 
   card.addEventListener("click", () => {
+    if (!currentQuestion.answered) return;
     answerElement.classList.toggle("show");
     questionElement.classList.toggle("hide");
     card.classList.toggle("show-answer");
@@ -313,6 +353,9 @@ async function submit() {
           }),
         },
       );
+
+      const data = await response.json();
+      console.log("Submitted session:", data);
 
       if (!response.ok) {
         throw new Error(

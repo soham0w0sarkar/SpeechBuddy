@@ -151,6 +151,13 @@ const startInactivityTimer = (popup) => {
     popup.addEventListener(event, handleUserInteraction);
   });
 
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "resetTimer") {
+      resetInactivityTimeout();
+      sendResponse({ message: "Timer reset" });
+    }
+  });
+
   resetInactivityTimeout();
 };
 

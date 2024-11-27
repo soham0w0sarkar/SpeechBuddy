@@ -2,6 +2,15 @@ async function start() {
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
       const customer = await fetchFirebaseData(user.uid);
+
+      if (customer.buddyList) {
+        customer.buddyList.forEach(async (buddyId) => {
+          if (user.uid === buddyId) {
+            navigateTo("home.html");
+          }
+        });
+      }
+
       const subcribed = await isSubscribed(customer.customerId);
 
       if (subcribed && customer.tier === "admin") {

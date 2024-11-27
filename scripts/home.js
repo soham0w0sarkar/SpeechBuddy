@@ -70,20 +70,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       hideLoader();
 
       const logoutButton = document.getElementById("logout-button");
+      const dashboardButton = document.getElementById("dashboard-button");
 
       let gradeLevel, pillar, goal;
       isSubscribed = false;
 
       const customer = await fetchUserAndCheckTier(user.uid);
 
-      if (customer.tier === "buddy") {
+      if (customer.tier === "buddy" || customer.tier === "admin") {
         gradeLevel = customer.gradeLevel;
         pillar = customer.pillar;
         goal = customer.goal;
         isSubscribed = true;
+        if (customer.tier === "admin") {
+          dashboardButton.classList.remove("hidden");
+        }
       }
 
-      setupEventListeners(logoutButton);
+      setupEventListeners(logoutButton, dashboardButton);
       setupGradePillarGoalSelection();
 
       if (gradeLevel) {
@@ -109,8 +113,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-const setupEventListeners = (logoutButton) => {
+const setupEventListeners = (logoutButton, dashboardButton) => {
   logoutButton.addEventListener("click", signout);
+  dashboardButton.addEventListener("click", openDashboard);
 
   const type = document.getElementById("questionType");
   type.addEventListener("change", () => {
@@ -655,7 +660,7 @@ const onContinue = async (isSubscribed) => {
     additionalParams,
   );
 
-  prompt += ", Keep the format in Q: Question and A: Answer. No extra strings.";
+  prompt += `, Keep the format in Q: Question and A: Answer should be one sentence long appropriate for ${selectedGradeLevel}. no extra strings.`;
 
   if (questionType === "specific") {
     const scrapedData = await sendScrapeRequest();
