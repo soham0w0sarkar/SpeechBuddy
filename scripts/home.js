@@ -46,7 +46,7 @@ const additionalParams = {
   conceptType: null,
 };
 
-let questionType = "generic";
+let questionType = "Select Question Type";
 
 document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(async (user) => {
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("pillar").value = pillar;
         populateDropdown(
           document.getElementById("goal"),
-          goalOptionsMap[pillar] || [],
+          goalOptionsMap[pillar] || []
         );
       }
       if (goal) {
@@ -118,6 +118,13 @@ const setupEventListeners = (logoutButton, dashboardButton) => {
   dashboardButton.addEventListener("click", openDashboard);
 
   const type = document.getElementById("questionType");
+
+  type.innerHTML = `
+    <option value="">Select Question Type</option>
+    <option value="general">General</option>
+    <option value="specific">Specific</option>
+  `;
+
   type.addEventListener("change", () => {
     questionType = type.value;
   });
@@ -175,9 +182,13 @@ function renderCommonFields(pillar, goal) {
   if (pillar === "Articulation") {
     return `
             <label for="position">Select Position:</label>
-            <select id="position" name="position">${generateOptions(optionsMap.position)}</select>
+            <select id="position" name="position">${generateOptions(
+              optionsMap.position
+            )}</select>
             <label for="level">Select Level:</label>
-            <select id="level" name="level">${generateOptions(optionsMap.level)}</select>
+            <select id="level" name="level">${generateOptions(
+              optionsMap.level
+            )}</select>
         `;
   }
   return "";
@@ -189,7 +200,7 @@ function renderSpecificFields(pillar, goal) {
   if (pillar === "Articulation" && goal === "Consonant Clusters") {
     fields = generateCheckboxes(
       multiSelectOptionsMap["consonant_clusters"],
-      "letter",
+      "letter"
     );
   } else if (pillar === "Articulation" && goal === "Letter Sounds") {
     fields = generateCheckboxes(multiSelectOptionsMap["letter"], "letter");
@@ -252,7 +263,10 @@ function renderExpressiveFields(goal) {
     case "Figurative Language":
       fields = `
                 ${generateDropdown("figurative", optionsMap["figurative"])}
-                ${generateDropdown("figurativeActivity", optionsMap["figurative_activity"])}
+                ${generateDropdown(
+                  "figurativeActivity",
+                  optionsMap["figurative_activity"]
+                )}
               `;
       break;
     default:
@@ -274,7 +288,10 @@ function renderPhonologyFields(goal) {
       break;
     case "Multisyllabic Words":
       fields = `
-                ${generateDropdown("numberOfSyllables", optionsMap["number_of_syllables"])}
+                ${generateDropdown(
+                  "numberOfSyllables",
+                  optionsMap["number_of_syllables"]
+                )}
                 ${generateDropdown("deletionType", optionsMap["deletion_type"])}
             `;
       break;
@@ -285,7 +302,10 @@ function renderPhonologyFields(goal) {
       break;
     case "Substitution":
       fields = `
-                ${generateDropdown("substitutionType", optionsMap["substitution_type"])}
+                ${generateDropdown(
+                  "substitutionType",
+                  optionsMap["substitution_type"]
+                )}
             `;
       break;
     default:
@@ -306,7 +326,7 @@ function renderReceptiveFields(goal) {
       return (
         generateDropdown(
           "vocabularyActivity",
-          optionsMap["vocabulary_activity"],
+          optionsMap["vocabulary_activity"]
         ) + generateDropdown("wordType", optionsMap["word_type"])
       );
     case "Following Directions":
@@ -367,7 +387,7 @@ function generateCheckboxes(options, name) {
             <input type="checkbox" id="${option}" name="${name} ${idx}" value="${option}">
             <label for="${option}">${option}</label>
         </span>
-    `,
+    `
     )
     .join("");
 }
@@ -433,7 +453,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("wh")) {
         additionalFields = generateCheckboxes(
           multiSelectOptionsMap["wh"],
-          "wh",
+          "wh"
         );
         document
           .getElementById("additionalSyntaxFields")
@@ -446,7 +466,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("conjunction")) {
         additionalFields = generateDropdown(
           "conjunction",
-          optionsMap["conjunction"],
+          optionsMap["conjunction"]
         );
         document
           .getElementById("additionalSyntaxFields")
@@ -469,7 +489,7 @@ document.addEventListener("change", function (event) {
 
     if (value === "Coordinating") {
       const subordinationLabel = document.querySelector(
-        "label[for=subordination]",
+        "label[for=subordination]"
       );
       const subordinationElement = document.getElementById("subordination");
       if (subordinationElement) {
@@ -479,7 +499,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("coordinating")) {
         additionalFields = generateDropdown(
           "coordinating",
-          optionsMap["coordinating"],
+          optionsMap["coordinating"]
         );
         document
           .getElementById("additionalSyntaxFields")
@@ -487,7 +507,7 @@ document.addEventListener("change", function (event) {
       }
     } else if (value === "Subordination") {
       const coordinatingLabel = document.querySelector(
-        "label[for=coordinating]",
+        "label[for=coordinating]"
       );
       const coordinatingElement = document.getElementById("coordinating");
       if (coordinatingElement) {
@@ -498,7 +518,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("subordination")) {
         additionalFields = generateDropdown(
           "subordination",
-          optionsMap["subordination"],
+          optionsMap["subordination"]
         );
         document
           .getElementById("additionalSyntaxFields")
@@ -521,7 +541,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("storyElement")) {
         additionalFields = generateDropdown(
           "storyElement",
-          optionsMap["story_element"],
+          optionsMap["story_element"]
         );
         document
           .getElementById("additionalNarrativeFields")
@@ -529,7 +549,7 @@ document.addEventListener("change", function (event) {
       }
     } else if (value === "Retelling") {
       const storyElementLabel = document.querySelector(
-        "label[for=storyElement]",
+        "label[for=storyElement]"
       );
       const storyElementElement = document.getElementById("storyElement");
       if (storyElementElement) {
@@ -540,7 +560,7 @@ document.addEventListener("change", function (event) {
       if (!document.getElementById("retelling")) {
         additionalFields = generateDropdown(
           "retelling",
-          optionsMap["retelling"],
+          optionsMap["retelling"]
         );
         document
           .getElementById("additionalNarrativeFields")
@@ -603,16 +623,18 @@ const validateForm = () => {
   const pillarSelect = document.getElementById("pillar");
   const goalSelect = document.getElementById("goal");
   const checkboxes = document.querySelectorAll(
-    "#additionalFields input[type=checkbox]",
+    "#additionalFields input[type=checkbox]"
   );
+  const questionType = document.getElementById("questionType");
   const continueBtn = document.getElementById("continueBtn");
 
   const allFieldsFilled =
     gradeLevelSelect.value &&
     pillarSelect.value &&
     goalSelect.value &&
+    questionType.value &&
     [...document.querySelectorAll("#additionalFields select")].every(
-      (select) => select.value,
+      (select) => select.value
     );
 
   const checkboxChecked =
@@ -627,7 +649,7 @@ const onContinue = async (isSubscribed) => {
 
   const additionalFieldsContainer = document.getElementById("additionalFields");
   const selectedFields = additionalFieldsContainer.querySelectorAll(
-    "input, select, textarea",
+    "input, select, textarea"
   );
   const selectedValues = {};
 
@@ -657,7 +679,7 @@ const onContinue = async (isSubscribed) => {
     selectedGoal,
     selectedGradeLevel,
     selectedPillar,
-    additionalParams,
+    additionalParams
   );
 
   prompt += `, Keep the format in Q: Question and A: Answer should be one sentence long appropriate for ${selectedGradeLevel}. no extra strings.`;
@@ -759,21 +781,24 @@ const gradeLevelOptions = [
 
 const goalOptionsMap = {
   Articulation: ["Consonant Clusters", "Letter Sounds"],
-  Expressive: [
-    "Labeling",
-    "Sequence",
-    "Definitions",
-    "Morphology",
-    "Syntax",
-    "Narrative",
-    "Figurative Language",
-  ],
-  Phonology: [
-    "Multisyllabic Words",
-    "Assimilation",
-    "Minimal Pairs",
-    "Substitution",
-  ],
+  // Expressive: [
+  //   "Labeling",
+  //   "Sequence",
+  //   "Definitions",
+  //   "Morphology",
+  //   "Syntax",
+  //   "Narrative",
+  //   "Figurative Language",
+  // ],
+  // Phonology: [
+  //   "Multisyllabic Words",
+  //   "Assimilation",
+  //   "Minimal Pairs",
+  //   "Substitution",
+  // ],
+
+  Phonology: ["Multisyllabic Words", "Minimal Pairs"],
+  Expressive: ["Syntax", "Figurative Language"],
   Receptive: ["Categories", "Vocabulary", "Following Directions"],
   Pragmatics: ["Conversation"],
   Fluency: ["Desensitization", "Techniques"],
@@ -870,7 +895,7 @@ const optionsMap = {
   figurative_activity: ["Meaning", "Fill in the Blanks", "Create Sentences"],
   receptive: ["Function", "Parts", "Location", "Similarities", "Differences"],
   receptive_activity: ["Describe", "Compare and Contrast", "List of 3"],
-  number_of_syllables: ["3+ Syllable", "5+ Syllable"],
+  number_of_syllables: ["3 Syllable", "5 Syllable"],
   deletion_type: ["Initial", "Medial", "Final", "Weak Syllable"],
   substitution_type: [
     "Fronting",
@@ -962,7 +987,11 @@ function generatePrompt(goal, gradeLevel, pillar, additionalParams) {
         }
       } else if (goal === "Syntax") {
         if (additionalParams.syntax === "Wh- Questions") {
-          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} starting with ${additionalParams.wh.map((wh) => wh).join(", ")} in ${additionalParams.activity}`;
+          return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${
+            additionalParams.syntax
+          } starting with ${additionalParams.wh
+            .map((wh) => wh)
+            .join(", ")} in ${additionalParams.activity}`;
         } else if (additionalParams.syntax === "Conjunctions") {
           if (additionalParams.conjunction === "Coordinating") {
             return `Act like a speech pathologist specializing in ${pillar} and give me 10 direct and concise questions with answers for a speech therapy client in the ${gradeLevel} to elicit the goal of ${goal} in the form of ${additionalParams.syntax} using the ${additionalParams.conjunction} targeting ${additionalParams.coordinating} in ${additionalParams.activity}`;

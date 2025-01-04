@@ -1,75 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Render Popup</title>
-        <style>
-            body {
-                padding: 0 24px;
-                margin: 0;
-                height: 400px;
-                background-color: white;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Render Popup</title>
 
-            #render {
-                background: inherit;
-                width: 200px;
-                height: 40px;
-                color: black;
-                border: 2px solid #195c65;
-                border-radius: 20px;
-                box-shadow: 2px 2px 2px black;
-                cursor: pointer;
-                transition: all 0.3s ease-in-out;
-                font-size: 16px;
-            }
+    <style>
+      body {
+        padding: 0 24px;
+        margin: 0;
+        height: 400px;
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-            #render:hover {
-                background-color: #195c65;
-                color: white;
-                box-shadow: 4px 4px 4px black;
-            }
+      #render {
+        background: inherit;
+        width: 200px;
+        height: 40px;
+        color: black;
+        border: 2px solid #195c65;
+        border-radius: 20px;
+        box-shadow: 2px 2px 2px black;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        font-size: 16px;
+      }
 
-            #render:focus {
-                outline: none;
-                box-shadow: 1px 1px 1px black;
-            }
+      #render:hover {
+        background-color: #195c65;
+        color: white;
+        box-shadow: 4px 4px 4px black;
+      }
 
-            #render #render:active {
-                transform: scale(0.98);
-                box-shadow: 0 0 0 black;
-            }
+      #render:focus {
+        outline: none;
+        box-shadow: 1px 1px 1px black;
+      }
 
-            #back {
-                position: fixed;
-                bottom: 10px;
-                left: 10px;
-                background: inherit;
-                color: #195c65;
-                border: none;
-                text-decoration: underline;
-                font-size: 18px;
-            }
+      #render #render:active {
+        transform: scale(0.98);
+        box-shadow: 0 0 0 black;
+      }
 
-            #back:hover {
-                color: black;
-            }
-        </style>
-    </head>
-    <body>
-        <button id="back">Home</button>
-        <button id="render">Let's Go!!</button>
-        <script src="firebase-app-compat.js"></script>
-        <script src="firebase-auth-compat.js"></script>
-        <script src="firebase-storage-compat.js"></script>
-        <script src="scripts/firebease-config.js"></script>
-        <script src="firebase-firestore-compat.js"></script>
-        <script src="scripts/loader.js"></script>
-        <script src="scripts/navigation.js"></script>
-        <script src="scripts/renderPopup.js"></script>
-    </body>
+      #back {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        background: inherit;
+        color: #195c65;
+        border: none;
+        text-decoration: underline;
+        font-size: 18px;
+      }
+
+      #back:hover {
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="back">Home</button>
+    <button id="render">Let's Go!!</button>
+
+    <script src="firebase-app-compat.js"></script>
+    <script src="firebase-auth-compat.js"></script>
+    <script src="firebase-firestore-compat.js"></script>
+    <script src="scripts/firebease-config.js"></script>
+    <script src="firebase-storage-compat.js"></script>
+
+    <script src="scripts/loader.js"></script>
+    <script src="scripts/navigation.js"></script>
+    <script src="scripts/renderPopup.js"></script>
+  </body>
 </html>

@@ -1,78 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Home</title>
-        <link rel="stylesheet" type="text/css" href="style.css" />
-    </head>
-    <body>
-        <div id="home-view">
-            <header>
-                <h1>Goal Settings</h1>
-            </header>
-            <div class="main">
-                <div id="formContainer">
-                    <label
-                        id="tailoredQuestionsLabel"
-                        class="hidden"
-                        for="tailoredQuestions"
-                    >
-                        Tailored questions:
-                    </label>
-                    <select id="tailoredQuestions" class="hidden">
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                    </select>
-                    <label id="questionTypeLabel" for="questionType">
-                        Select Question Type:
-                    </label>
-                    <select id="questionType">
-                        <option value="generic">Generic</option>
-                        <option value="specific">Specific</option>
-                    </select>
-                    <label for="gradeLevel">Select Grade Level:</label>
-                    <select id="gradeLevel">
-                        <option value="">Select Grade Level</option>
-                    </select>
+  <head>
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <div id="home-view">
+      <header>
+        <h1>Goal Settings</h1>
+      </header>
+      <div class="main">
+        <div id="formContainer">
+          <label
+            id="tailoredQuestionsLabel"
+            class="hidden"
+            for="tailoredQuestions"
+          >
+            Tailored questions:
+          </label>
+          <select id="tailoredQuestions" class="hidden">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <label id="questionTypeLabel" for="questionType">
+            Select Question Type:
+          </label>
+          <select id="questionType">
+            <option value="">Select Question Type</option>
+          </select>
+          <label for="gradeLevel">Select Grade Level:</label>
+          <select id="gradeLevel">
+            <option value="">Select Grade Level</option>
+          </select>
 
-                    <label for="pillar">Select Pillar:</label>
-                    <select id="pillar">
-                        <option value="">Select Pillar</option>
-                    </select>
+          <label for="pillar">Select Pillar:</label>
+          <select id="pillar">
+            <option value="">Select Pillar</option>
+          </select>
 
-                    <label for="goal">Select Goal:</label>
-                    <select id="goal">
-                        <option value="">Select Goal</option>
-                    </select>
-                    <div id="additionalFields"></div>
-                    <button id="continueBtn" disabled>Continue</button>
-                </div>
-            </div>
-            <div class="footer">
-                <button
-                    id="dashboard-button"
-                    class="text-button left-align hidden"
-                >
-                    Dashboard
-                </button>
-                <button id="logout-button" class="text-button right-align">
-                    Logout
-                </button>
-            </div>
+          <label for="goal">Select Goal:</label>
+          <select id="goal">
+            <option value="">Select Goal</option>
+          </select>
+          <div id="additionalFields"></div>
+          <button id="continueBtn" disabled>Continue</button>
         </div>
-        <div id="loader">
-            <img src="assets/logo_32.png" alt="Loading..." />
-        </div>
-        <script src="firebase-app-compat.js"></script>
-        <script src="firebase-auth-compat.js"></script>
-        <script src="firebase-storage-compat.js"></script>
-        <script src="scripts/firebease-config.js"></script>
-        <script src="firebase-firestore-compat.js"></script>
-        <script src="scripts/loader.js"></script>
-        <script src="scripts/navigation.js"></script>
-        <script src="scripts/fetch-user-from-firebase.js"></script>
-        <script src="scripts/is-user-subscribed.js"></script>
-        <script src="scripts/cookies.js"></script>
-        <script src="scripts/openDashboard.js"></script>
-        <script src="scripts/home.js"></script>
-    </body>
+      </div>
+      <div class="footer">
+        <button id="dashboard-button" class="text-button left-align hidden">
+          Dashboard
+        </button>
+        <button id="logout-button" class="text-button right-align">
+          Logout
+        </button>
+      </div>
+    </div>
+    <div id="loader">
+      <img src="assets/logo_32.png" alt="Loading..." />
+    </div>
+
+    <script src="firebase-app-compat.js"></script>
+    <script src="firebase-auth-compat.js"></script>
+    <script src="firebase-firestore-compat.js"></script>
+    <script src="scripts/firebease-config.js"></script>
+    <script src="firebase-storage-compat.js"></script>
+
+    <script src="scripts/loader.js"></script>
+    <script src="scripts/navigation.js"></script>
+    <script src="scripts/fetch-user-from-firebase.js"></script>
+    <script src="scripts/is-user-subscribed.js"></script>
+    <script src="scripts/cookies.js"></script>
+    <script src="scripts/openDashboard.js"></script>
+    <script src="scripts/home.js"></script>
+  </body>
 </html>

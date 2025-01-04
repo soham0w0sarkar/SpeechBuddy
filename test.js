@@ -1,14 +1,4 @@
-!(function (e, t) {
-  "object" == typeof exports && "undefined" != typeof module
-    ? t(require("@firebase/app-compat"), require("@firebase/app"))
-    : "function" == typeof define && define.amd
-    ? define(["@firebase/app-compat", "@firebase/app"], t)
-    : t(
-        (e = "undefined" != typeof globalThis ? globalThis : e || self)
-          .firebase,
-        e.firebase.INTERNAL.modularAPIs
-      );
-})(this, function (ci, li) {
+∆(this, function (ci, li) {
   "use strict";
   try {
     !function () {
@@ -5470,7 +5460,33 @@
         return window;
       }
       null != (Nr = n()) && Nr._authIdTokenMaxAge,
-        (ht = {}),
+        (ht = {
+          loadJS(r) {
+            return new Promise((e, n) => {
+              const t = document.createElement("script");
+              t.setAttribute("src", r),
+                (t.onload = e),
+                (t.onerror = (e) => {
+                  const t = m("internal-error");
+                  (t.customData = e), n(t);
+                }),
+                (t.type = "text/javascript"),
+                (t.charset = "UTF-8"),
+                (null !=
+                (e =
+                  null == (e = document.getElementsByTagName("head"))
+                    ? void 0
+                    : e[0])
+                  ? e
+                  : document
+                ).appendChild(t);
+            });
+          },
+          gapiScript: "https://apis.google.com/js/api.js",
+          recaptchaV2Script: "https://www.google.com/recaptcha/api.js",
+          recaptchaEnterpriseScript:
+            "https://www.google.com/recaptcha/enterprise.js?render=",
+        }),
         (Or = "Browser"),
         li._registerComponent(
           new ie(

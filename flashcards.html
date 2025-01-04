@@ -1,281 +1,280 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Flashcards</title>
-        <style>
-            :root {
-                --primary-color: #2196f3;
-                --secondary-color: #fece00;
-                --highlight-color: orange;
-                --button-hover-color: #195c56;
-                --button-hover-lighter: #3b867e;
-                --secondary-hover-color: #ffe34f;
-                --background-color: #f0f0f0;
-                --text-color: white;
-                --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                --font-family: Arial, sans-serif;
-                --transition-speed: 0.2s;
-            }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-            * {
-                transition: all var(--transition-speed) ease-in-out;
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
+    <title>Flashcards</title>
+    <style>
+      :root {
+        --primary-color: #2196f3;
+        --secondary-color: #fece00;
+        --highlight-color: orange;
+        --button-hover-color: #195c56;
+        --button-hover-lighter: #3b867e;
+        --secondary-hover-color: #ffe34f;
+        --background-color: #f0f0f0;
+        --text-color: white;
+        --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        --font-family: Arial, sans-serif;
+        --transition-speed: 0.2s;
+      }
 
-            body {
-                font-family: var(--font-family);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: space-between;
-                min-height: 100vh;
-                margin: 0;
-                background-color: var(--background-color);
-            }
+      * {
+        transition: all var(--transition-speed) ease-in-out;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-            #cut {
-                display: block;
-                width: 30px;
-                height: 30px;
-                position: fixed;
-                top: 2px;
-                right: 2px;
-                font-size: 2rem;
-                color: var(--button-hover-color);
-                cursor: pointer;
-                z-index: 100;
-                padding: 5px;
-                background-color: var(--background-color);
-            }
+      body {
+        font-family: var(--font-family);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 100vh;
+        margin: 0;
+        background-color: var(--background-color);
+      }
 
-            header {
-                color: var(--button-hover-color);
-                text-align: center;
-                width: 100%;
-                padding: 10px;
-                background-color: var(--background-color);
-                z-index: 10;
-                position: sticky;
-                top: 0;
-            }
+      #cut {
+        display: block;
+        width: 30px;
+        height: 30px;
+        position: fixed;
+        top: 2px;
+        right: 2px;
+        font-size: 2rem;
+        color: var(--button-hover-color);
+        cursor: pointer;
+        z-index: 100;
+        padding: 5px;
+        background-color: var(--background-color);
+      }
 
-            header h1 {
-                font-size: 2rem;
-                margin: 0;
-            }
+      header {
+        color: var(--button-hover-color);
+        text-align: center;
+        width: 100%;
+        padding: 10px;
+        background-color: var(--background-color);
+        z-index: 10;
+        position: sticky;
+        top: 0;
+      }
 
-            #flashcardContainer {
-                width: 75%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-grow: 1;
-            }
+      header h1 {
+        font-size: 2rem;
+        margin: 0;
+      }
 
-            .card {
-                width: 80%;
-                background-color: var(--primary-color);
-                color: var(--text-color);
-                margin: 20px;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: var(--box-shadow);
-                transition: transform 0.3s ease-in-out;
-                text-align: center;
-            }
+      #flashcardContainer {
+        width: 75%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+      }
 
-            .card.current {
-                transform: scale(1.1);
-            }
+      .card {
+        width: 80%;
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        margin: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: var(--box-shadow);
+        transition: transform 0.3s ease-in-out;
+        text-align: center;
+      }
 
-            .card.show-answer {
-                background-color: var(--highlight-color);
-            }
+      .card.current {
+        transform: scale(1.1);
+      }
 
-            .card-content .answer {
-                display: none;
-                color: var(--text-color);
-                font-size: 1.25rem;
-            }
+      .card.show-answer {
+        background-color: var(--highlight-color);
+      }
 
-            .card-content .hide {
-                display: none;
-            }
+      .card-content .answer {
+        display: none;
+        color: var(--text-color);
+        font-size: 1.25rem;
+      }
 
-            .card.show-answer .card-content .answer.show {
-                display: block;
-            }
+      .card-content .hide {
+        display: none;
+      }
 
-            .navigation {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 10px;
-            }
+      .card.show-answer .card-content .answer.show {
+        display: block;
+      }
 
-            .navigation button {
-                background-color: var(--button-hover-color);
-                color: var(--text-color);
-                border: none;
-                padding: 10px 20px;
-                margin: 0 10px;
-                cursor: pointer;
-                border-radius: 5px;
-                font-size: 1rem;
-            }
+      .navigation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+      }
 
-            .navigation button:hover {
-                background-color: var(--button-hover-lighter);
-            }
+      .navigation button {
+        background-color: var(--button-hover-color);
+        color: var(--text-color);
+        border: none;
+        padding: 10px 20px;
+        margin: 0 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
 
-            .record {
-                background-color: var(--secondary-color);
-                color: var(--text-color);
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                border-radius: 5px;
-                font-size: 1rem;
-                margin-top: 10px;
-            }
+      .navigation button:hover {
+        background-color: var(--button-hover-lighter);
+      }
 
-            .record:hover {
-                background-color: var(--secondary-hover-color);
-            }
+      .record {
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-top: 10px;
+      }
 
-            #timer {
-                font-weight: semibold;
-                font-size: 1.25rem;
-                margin-top: 1rem;
-            }
+      .record:hover {
+        background-color: var(--secondary-hover-color);
+      }
 
-            footer {
-                width: 100%;
-                padding: 10px;
-                text-align: center;
-                background-color: var(--background-color);
-                box-shadow: var(--box-shadow);
-                z-index: 10;
-                position: sticky;
-                bottom: 0;
-            }
+      #timer {
+        font-weight: semibold;
+        font-size: 1.25rem;
+        margin-top: 1rem;
+      }
 
-            footer button {
-                background-color: var(--button-hover-color);
-                color: var(--text-color);
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                border-radius: 5px;
-                font-size: 1rem;
-                margin-bottom: 10px;
-            }
+      footer {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        background-color: var(--background-color);
+        box-shadow: var(--box-shadow);
+        z-index: 10;
+        position: sticky;
+        bottom: 0;
+      }
 
-            footer button:hover {
-                background-color: var(--button-hover-lighter);
-            }
+      footer button {
+        background-color: var(--button-hover-color);
+        color: var(--text-color);
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+      }
 
-            button:disabled {
-                background-color: #ccc;
-                cursor: not-allowed;
-            }
+      footer button:hover {
+        background-color: var(--button-hover-lighter);
+      }
 
-            .hidden {
-                display: none;
-            }
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
 
-            #loader {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border: 5px solid #f3f3f3;
-                border-radius: 50%;
-                border-top: 5px solid #3498db;
-                width: 50px;
-                height: 50px;
-                padding: 10px;
-                animation: spin 1s linear infinite;
-                z-index: 1000;
-            }
+      .hidden {
+        display: none;
+      }
 
-            #loader img {
-                display: block;
-                width: 100%;
-                height: 100%;
-                transform: translate(0, 0);
-                animation: anti-spin 1s linear infinite;
-            }
+      #loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        width: 50px;
+        height: 50px;
+        padding: 10px;
+        animation: spin 1s linear infinite;
+        z-index: 1000;
+      }
 
-            @keyframes spin {
-                0% {
-                    transform: translate(-50%, -50%) rotate(0deg);
-                }
+      #loader img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        transform: translate(0, 0);
+        animation: anti-spin 1s linear infinite;
+      }
 
-                100% {
-                    transform: translate(-50%, -50%) rotate(360deg);
-                }
-            }
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
 
-            @keyframes anti-spin {
-                0% {
-                    transform: translate(0, 0) rotate(360deg);
-                }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
 
-                100% {
-                    transform: translate(0, 0) rotate(0deg);
-                }
-            }
-        </style>
-    </head>
+      @keyframes anti-spin {
+        0% {
+          transform: translate(0, 0) rotate(360deg);
+        }
 
-    <body>
-        <header>
-            <h1>Flashcards</h1>
-        </header>
-        <span id="cut">&times;</span>
-        <main id="flashcardContainer"></main>
-        <div class="navigation">
-            <button id="previousBtn" aria-label="Previous Card">
-                Previous
-            </button>
-            <span id="currentIndex"> - </span>
-            <button id="nextBtn" aria-label="Next Card">Next</button>
-        </div>
-        <button class="record" id="record-button" aria-label="Record Audio">
-            Record Audio
-        </button>
-        <span id="timer">00:00</span>
-        <button
-            class="record"
-            id="stop-button"
-            style="display: none"
-            aria-label="Stop Recording"
-        >
-            Stop Recording
-        </button>
-        <footer>
-            <button id="generateButton" aria-label="Generate Cards">
-                Generate
-            </button>
-            <button id="submitButton" aria-label="Submit Button">Submit</button>
-        </footer>
-        <div id="loader" class="hidden">
-            <img src="assets/logo_128.png" alt="Loading..." />
-        </div>
-        <noscript>
-            <p>JavaScript is required to view this content.</p>
-        </noscript>
-        <script src="firebase-app-compat.js"></script>
-        <script src="firebase-auth-compat.js"></script>
-        <script src="firebase-storage-compat.js"></script>
-        <script src="scripts/firebease-config.js"></script>
-        <script src="firebase-firestore-compat.js"></script>
-        <script src="/scripts/navigation.js"></script>
-        <script src="/scripts/flashcards.js"></script>
-    </body>
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Flashcards</h1>
+    </header>
+    <span id="cut">&times;</span>
+    <main id="flashcardContainer"></main>
+    <div class="navigation">
+      <button id="previousBtn" aria-label="Previous Card">Previous</button>
+      <span id="currentIndex"> - </span>
+      <button id="nextBtn" aria-label="Next Card">Next</button>
+    </div>
+    <button class="record" id="record-button" aria-label="Record Audio">
+      Record Audio
+    </button>
+    <span id="timer">00:00</span>
+    <button
+      class="record"
+      id="stop-button"
+      style="display: none"
+      aria-label="Stop Recording"
+    >
+      Stop Recording
+    </button>
+    <footer>
+      <button id="generateButton" aria-label="Generate Cards">Generate</button>
+      <button id="submitButton" aria-label="Submit Button">Submit</button>
+    </footer>
+    <div id="loader" class="hidden">
+      <img src="assets/logo_128.png" alt="Loading..." />
+    </div>
+    <noscript>
+      <p>JavaScript is required to view this content.</p>
+    </noscript>
+
+    <script src="firebase-app-compat.js"></script>
+    <script src="firebase-auth-compat.js"></script>
+    <script src="firebase-firestore-compat.js"></script>
+    <script src="scripts/firebease-config.js"></script>
+    <script src="firebase-storage-compat.js"></script>
+
+    <script src="/scripts/navigation.js"></script>
+    <script src="/scripts/flashcards.js"></script>
+  </body>
 </html>

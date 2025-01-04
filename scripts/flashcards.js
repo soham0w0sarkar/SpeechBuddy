@@ -36,7 +36,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       previousBtn: previousFlashcard,
       "record-button": startRecording,
       "stop-button": stopRecording,
-      generateButton: fetchFlashcards,
+      generateButton: () => {
+        if (isSubscribed) {
+          submit();
+        }
+        fetchFlashcards();
+      },
       submitButton: submit,
       cut: sendMessage,
     });
@@ -73,7 +78,7 @@ const sendResetMessage = async () => {
   }
 };
 
-const throttledStopInactivityTimer = throttle(sendResetMessage, 9000);
+const throttledStopInactivityTimer = throttle(sendResetMessage, 10000);
 
 const setupActivityListeners = () => {
   ["mouseover", "mouseout", "click", "keydown"].forEach((event) => {
@@ -132,7 +137,9 @@ function startTimer() {
       min++;
       sec = 0;
     }
-    timer.textContent = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    timer.textContent = `${min.toString().padStart(2, "0")}:${sec
+      .toString()
+      .padStart(2, "0")}`;
   }, 1000);
 }
 
@@ -242,12 +249,12 @@ async function fetchFlashcards() {
           userStatus: isSubscribed ? "premium" : "free",
           studentId: user.uid,
         }),
-      },
+      }
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error fetching flashcards: ${response.status} ${response.statusText}`,
+        `Error fetching flashcards: ${response.status} ${response.statusText}`
       );
     }
 
@@ -300,7 +307,7 @@ function renderFlashcards() {
   flashcardContainer.appendChild(card);
 
   card.addEventListener("click", () => {
-    if (!currentQuestion.answered) return;
+    if (isSubscribed && !currentQuestion.answered) return;
     answerElement.classList.toggle("show");
     questionElement.classList.toggle("hide");
     card.classList.toggle("show-answer");
@@ -351,7 +358,7 @@ async function submit() {
             user_id: user.uid,
             session_id: session,
           }),
-        },
+        }
       );
 
       const data = await response.json();
@@ -359,12 +366,11 @@ async function submit() {
 
       if (!response.ok) {
         throw new Error(
-          `Error submitting: ${response.status} ${response.statusText}`,
+          `Error submitting: ${response.status} ${response.statusText}`
         );
       }
     }
     hideLoader();
-    sendMessage();
   } catch (error) {
     console.error("Error submitting:", error);
   }

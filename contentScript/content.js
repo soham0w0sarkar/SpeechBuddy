@@ -134,13 +134,10 @@ const startInactivityTimer = (popup) => {
     clearTimeout(reappearTimeout);
     inactivityTimeout = setTimeout(() => {
       hidePopup();
-      reappearTimeout = setTimeout(
-        () => {
-          togglePopupVisibility();
-        },
-        5 * 60 * 1000,
-      );
-    }, 10 * 1000);
+      reappearTimeout = setTimeout(() => {
+        togglePopupVisibility();
+      }, 5 * 60 * 1000);
+    }, 20 * 1000);
   };
 
   const handleUserInteraction = () => {
