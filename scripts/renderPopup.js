@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let prompt = null;
   let isSubscribed = false;
   let currentUrl = null;
-
+  let scrapedData = null;
   firebase.auth().onAuthStateChanged(async (user) => {
     if (!user) navigateTo("login.html");
 
@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pillar = formData.get("pillar");
       goal = formData.get("goal");
       prompt = formData.get("prompt");
+      scrapedData = JSON.parse(formData.get("scrappedData"));
 
       const [tab] = await chrome.tabs.query({
         active: true,
@@ -34,7 +35,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       currentUrl = tab.url;
 
-      await save(gradeLevel, pillar, goal, prompt, isSubscribed, currentUrl);
+      await save(
+        gradeLevel,
+        pillar,
+        goal,
+        prompt,
+        isSubscribed,
+        currentUrl,
+        scrapedData
+      );
     }
   });
 });
@@ -46,6 +55,7 @@ async function save(
   prompt,
   isSubscribed,
   currentUrl,
+  scrapedData
 ) {
   await chrome.storage.local.set({
     data: {
@@ -55,6 +65,7 @@ async function save(
       prompt,
       isSubscribed,
       currentUrl,
+      scrapedData,
     },
   });
 }

@@ -41,6 +41,22 @@ const scrapePageContent = () => {
 
 const getVideoDetails = async () => {
   try {
+    const waitForElement = async (selector) => {
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          const element = document.querySelector(selector);
+          if (element) {
+            clearInterval(interval);
+            resolve(element);
+          }
+        }, 100);
+        setTimeout(() => {
+          clearInterval(interval);
+          resolve(null);
+        }, 5000); // Timeout after 5 seconds
+      });
+    };
+
     const expandButton = await waitForElement("#expand");
     if (expandButton) {
       expandButton.click();
@@ -48,7 +64,7 @@ const getVideoDetails = async () => {
     }
 
     const primaryButton = await waitForElement(
-      "#primary-button > ytd-button-renderer > yt-button-shape > button",
+      "#primary-button > ytd-button-renderer > yt-button-shape > button"
     );
     if (primaryButton) {
       primaryButton.click();
@@ -56,23 +72,41 @@ const getVideoDetails = async () => {
     }
 
     const panelElement = await waitForElement(
-      "#content > ytd-transcript-renderer",
+      "#content > ytd-transcript-renderer"
     );
 
-    let panelContent = panelElement
-      ? panelElement.innerText
-      : "Panel content not found";
+    if (!panelElement) {
+      console.error("Panel content not found");
+      return "Panel content not found";
+    }
 
-    let tokens = panelContent
-      .split(/\s+/)
-      .filter((token) => token.trim().length > 0);
-    let limitedTokens = tokens.slice(0, 1000);
+    const panelContent = panelElement.innerText;
+    const lines = panelContent.split("\n");
+    const fiveMinuteSegments = {};
 
-    const content = limitedTokens.join(" ");
+    lines.forEach((line) => {
+      const timeMatch = line.match(/^(\d+):(\d{2})/);
+      if (timeMatch) {
+        const minutes = Number(timeMatch[1]);
+        const segmentKey = `${Math.floor(minutes / 5) * 5}-${
+          Math.floor(minutes / 5) * 5 + 4
+        }`;
 
-    console.log("Content:", content);
+        if (!fiveMinuteSegments[segmentKey]) {
+          fiveMinuteSegments[segmentKey] = [];
+        }
+      }
 
-    return content;
+      const lastKey = Object.keys(fiveMinuteSegments).at(-1);
+      if (lastKey) {
+        fiveMinuteSegments[lastKey].push(line);
+      }
+    });
+
+    // Convert the object values into an array of arrays
+    const formattedSegments = Object.values(fiveMinuteSegments);
+
+    return formattedSegments;
   } catch (error) {
     console.error("Error in getVideoDetails:", error);
     return { error: error.message };

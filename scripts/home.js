@@ -684,16 +684,16 @@ const onContinue = async (isSubscribed) => {
 
   prompt += `, Keep the format in Q: Question and A: Answer should be one sentence long appropriate for ${selectedGradeLevel}. no extra strings.`;
 
-  if (questionType === "specific") {
-    const scrapedData = await sendScrapeRequest();
+  let scrapedData;
 
-    console.log(scrapedData);
+  if (questionType === "specific") {
+    scrapedData = await sendScrapeRequest();
 
     if (scrapedData && scrapedData.content) {
       if (scrapedData.type === "video") {
-        prompt += ` The questions should be based on the following video information:
-           video Transcripts: "${scrapedData.content}",
-           Focus on the key themes in the video description to generate insightful questions.`;
+        prompt += ` The questions should be based on the following video information:\n
+           video Transcripts: "${scrapedData.content[0].join(" ")}",\n
+           Focus on the key themes in the video description to generate insightful questions, also mention the timestamp at the starting of the question from where this question is.`;
       } else if (scrapedData.type === "text") {
         prompt += ` The questions should be based on the following artical :
           content: "${scrapedData.content}",
@@ -707,8 +707,9 @@ const onContinue = async (isSubscribed) => {
   params += `&pillar=${selectedPillar}`;
   params += `&goal=${selectedGoal}`;
   params += `&subscribedUser=${isSubscribed.toString()}`;
-
-  console.log(prompt);
+  params += `&scrappedData=${
+    (scrapedData && JSON.stringify(scrapedData)) || ""
+  }`;
 
   hideLoader();
   navigateTo("renderPopup.html?" + params);

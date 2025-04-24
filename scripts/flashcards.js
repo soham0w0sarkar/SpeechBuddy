@@ -1,8 +1,10 @@
 let currentIndex = 0;
+let currentSession = 0;
 let gradeLevel,
   pillar,
   goal,
   prompt,
+  scrapedData,
   questions = {},
   answeredQuestionsCount = 0;
 let mediaRecorder,
@@ -37,6 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "record-button": startRecording,
       "stop-button": stopRecording,
       generateButton: () => {
+        updateSession();
         if (isSubscribed) {
           submit();
         }
@@ -88,12 +91,21 @@ const setupActivityListeners = () => {
   });
 };
 
+const updateSession = () => {
+  currentSession++;
+  prompt = prompt.replace(
+    /video Transcripts: ".*?"/,
+    `video Transcripts: "${scrapedData.content[currentSession].join(" ")}"`
+  );
+};
+
 const loadState = async () => {
   try {
     const { data } = await chrome.storage.local.get(["data"]);
     if (data) {
-      ({ isSubscribed, gradeLevel, pillar, goal, prompt } = data);
+      ({ isSubscribed, gradeLevel, pillar, goal, prompt, scrapedData } = data);
     }
+    console.log(scrapedData);
   } catch (error) {
     console.error("Error loading state:", error);
   }
@@ -307,7 +319,10 @@ function renderFlashcards() {
   flashcardContainer.appendChild(card);
 
   card.addEventListener("click", () => {
-    if (isSubscribed && !currentQuestion.answered) return;
+    if (isSubscribed && !currentQuestion.answered) {
+      chrome.tts.speak(currentQuestion.question, { rate: 0.8 });
+      return;
+    }
     answerElement.classList.toggle("show");
     questionElement.classList.toggle("hide");
     card.classList.toggle("show-answer");
