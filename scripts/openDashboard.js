@@ -1,38 +1,25 @@
-const openDashboard = async () => {
-  const currentUser = firebase.auth().currentUser;
-  const token = await fetchToken(currentUser.uid);
-  if (!token) {
-    hideLoader();
-    console.error("Token not found");
-    return;
-  }
-  const data = getUserFromCookie();
-  const url = new URL("https://speechbuddy-dashboard.web.app/");
-  url.searchParams.append("token", token);
-  url.searchParams.append("customerId", data.customerId);
-  window.open(url.href, "_blank");
-  window.postMessage({ type: "AUTH_TOKEN", token }, "*");
-};
-
-const fetchToken = async (uid) => {
+async function openDashboard() {
   try {
-    const response = await fetch(
-      "https://us-central1-speechbuddy-30390.cloudfunctions.net/createToken",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: uid,
-        }),
+    const response = await fetch(window.FUNCTION_URLS.createToken, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        uid: firebase.auth().currentUser.uid,
+      }),
+    });
+
     if (!response.ok) {
-      throw new Error("Error fetching token");
+      throw new Error("Failed to create token");
     }
+
     const data = await response.json();
-    return data.token;
+    window.open(data.url, "_blank");
   } catch (error) {
-    console.error("Error fetching token:", error);
-    return null;
+    console.error("Error opening dashboard:", error);
   }
-};
+}
+
+// Export the function
+window.openDashboard = openDashboard;

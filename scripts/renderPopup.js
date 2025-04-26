@@ -1,74 +1,31 @@
-document.addEventListener("DOMContentLoaded", () => {
-  let gradeLevel = null;
-  let pillar = null;
-  let goal = null;
-  let prompt = null;
-  let isSubscribed = false;
-  let currentUrl = null;
-  let scrapedData = null;
-  firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) navigateTo("login.html");
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    showLoader();
+    const data = await DataManager.getData();
 
-    const formData = new URLSearchParams(window.location.search);
+    if (!data || !data.prompt) {
+      throw new Error("No data found");
+    }
+
+    const params = new URLSearchParams({
+      prompt: data.prompt,
+      gradeLevel: data.gradeLevel,
+      pillar: data.pillar,
+      goal: data.goal,
+      subscribedUser: data.isSubscribed.toString(),
+      scrappedData: data.scrapedData ? JSON.stringify(data.scrapedData) : "",
+    });
 
     document.querySelector("#render").addEventListener("click", async () => {
-      const response = await sendMessage();
-      if (response) window.close();
+      await sendMessage();
     });
-
-    document.querySelector("#back").addEventListener("click", async () => {
-      await chrome.storage.local.clear();
-      navigateTo("home.html");
-    });
-
-    if (formData.size > 0) {
-      isSubscribed = formData.get("subscribedUser") === "true";
-      gradeLevel = formData.get("gradeLevel");
-      pillar = formData.get("pillar");
-      goal = formData.get("goal");
-      prompt = formData.get("prompt");
-      scrapedData = JSON.parse(formData.get("scrappedData"));
-
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-      currentUrl = tab.url;
-
-      await save(
-        gradeLevel,
-        pillar,
-        goal,
-        prompt,
-        isSubscribed,
-        currentUrl,
-        scrapedData
-      );
-    }
-  });
+  } catch (error) {
+    console.error("Error in renderPopup:", error);
+    showError("Failed to load flashcards. Please try again.");
+  } finally {
+    hideLoader();
+  }
 });
-
-async function save(
-  gradeLevel,
-  pillar,
-  goal,
-  prompt,
-  isSubscribed,
-  currentUrl,
-  scrapedData
-) {
-  await chrome.storage.local.set({
-    data: {
-      gradeLevel,
-      pillar,
-      goal,
-      prompt,
-      isSubscribed,
-      currentUrl,
-      scrapedData,
-    },
-  });
-}
 
 async function sendMessage() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });

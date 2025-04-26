@@ -1,29 +1,59 @@
-let currentIndex = 0;
-let currentSession = 0;
-let gradeLevel,
-  pillar,
-  goal,
-  prompt,
-  scrapedData,
-  questions = {},
-  answeredQuestionsCount = 0;
-let mediaRecorder,
-  recordedChunks = [],
-  isSubscribed = false,
-  user,
-  session,
-  intervalId;
+// State management
+const state = {
+  currentIndex: 0,
+  currentSession: 0,
+  gradeLevel: null,
+  pillar: null,
+  goal: null,
+  prompt: null,
+  scrapedData: null,
+  questions: {},
+  answeredQuestionsCount: 0,
+  mediaRecorder: null,
+  recordedChunks: [],
+  isSubscribed: false,
+  user: null,
+  session: null,
+  intervalId: null,
+  activeStream: null,
+};
+
+// Cleanup function
+const cleanup = () => {
+  if (state.intervalId) {
+    clearInterval(state.intervalId);
+    state.intervalId = null;
+  }
+
+  if (state.activeStream) {
+    state.activeStream.getTracks().forEach((track) => track.stop());
+    state.activeStream = null;
+  }
+
+  if (state.mediaRecorder) {
+    state.mediaRecorder = null;
+  }
+
+  // Remove all event listeners
+  document.querySelectorAll("*").forEach((element) => {
+    const clone = element.cloneNode(true);
+    element.parentNode.replaceChild(clone, element);
+  });
+};
 
 document.addEventListener("DOMContentLoaded", async () => {
   hideContent();
   firebase.auth().onAuthStateChanged(async (currentUser) => {
-    if (!currentUser) sendMessage();
-    user = currentUser;
+    if (!currentUser) {
+      sendMessage();
+      return;
+    }
 
+    state.user = currentUser;
     await loadState();
     updateSubmitButtonState();
 
-    if (!isSubscribed) {
+    if (!state.isSubscribed) {
       const recordButton = document.getElementById("record-button");
       if (recordButton) recordButton.style.display = "none";
     } else {
@@ -40,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "stop-button": stopRecording,
       generateButton: () => {
         updateSession();
-        if (isSubscribed) {
+        if (state.isSubscribed) {
           submit();
         }
         fetchFlashcards();
@@ -53,6 +83,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     showContent();
   });
 });
+
+// Add cleanup on page unload
+window.addEventListener("unload", cleanup);
 
 const throttle = (func, delay) => {
   let lastCallTime = 0;
@@ -92,22 +125,44 @@ const setupActivityListeners = () => {
 };
 
 const updateSession = () => {
-  currentSession++;
-  prompt = prompt.replace(
-    /video Transcripts: ".*?"/,
-    `video Transcripts: "${scrapedData.content[currentSession].join(" ")}"`
-  );
+  state.currentSession++;
+  if (state.scrapedData && state.scrapedData.type === "video") {
+    // Check if we have a valid segment for the current session
+    if (
+      state.scrapedData.content &&
+      state.scrapedData.content[state.currentSession]
+    ) {
+      state.prompt = state.prompt.replace(
+        /video Transcripts: ".*?"/,
+        `video Transcripts: "${state.scrapedData.content[
+          state.currentSession
+        ].join(" ")}"`
+      );
+    } else {
+      // If we've reached the end of segments, loop back to the first one
+      state.currentSession = 0;
+      state.prompt = state.prompt.replace(
+        /video Transcripts: ".*?"/,
+        `video Transcripts: "${state.scrapedData.content[0].join(" ")}"`
+      );
+    }
+  }
 };
 
 const loadState = async () => {
   try {
-    const { data } = await chrome.storage.local.get(["data"]);
+    const data = await DataManager.getData();
     if (data) {
-      ({ isSubscribed, gradeLevel, pillar, goal, prompt, scrapedData } = data);
+      state.isSubscribed = data.isSubscribed;
+      state.gradeLevel = data.gradeLevel;
+      state.pillar = data.pillar;
+      state.goal = data.goal;
+      state.prompt = data.prompt;
+      state.scrapedData = data.scrapedData;
     }
-    console.log(scrapedData);
   } catch (error) {
     console.error("Error loading state:", error);
+    showError("Failed to load state. Please try again.");
   }
 };
 
@@ -127,9 +182,9 @@ function startRecording() {
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then((stream) => {
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = handleDataAvailable;
-      mediaRecorder.start();
+      state.mediaRecorder = new MediaRecorder(stream);
+      state.mediaRecorder.ondataavailable = handleDataAvailable;
+      state.mediaRecorder.start();
       recordButton.style.display = "none";
       stopButton.style.display = "inline-block";
       timer.style.display = "inline-block";
@@ -143,7 +198,7 @@ function startTimer() {
   let min = 0,
     sec = 0;
 
-  intervalId = setInterval(() => {
+  state.intervalId = setInterval(() => {
     sec++;
     if (sec === 60) {
       min++;
@@ -156,45 +211,68 @@ function startTimer() {
 }
 
 function handleDataAvailable(event) {
-  if (event.data.size > 0) recordedChunks.push(event.data);
+  if (event.data.size > 0) state.recordedChunks.push(event.data);
 }
 
 function stopRecording() {
   const stopButton = document.getElementById("stop-button");
   const timer = document.getElementById("timer");
 
-  mediaRecorder.stop();
+  state.mediaRecorder.stop();
   stopButton.style.display = "none";
   timer.style.display = "none";
   timer.textContent = "00:00";
 
-  clearInterval(intervalId);
+  clearInterval(state.intervalId);
 
-  mediaRecorder.onstop = async () => {
-    const blob = new Blob(recordedChunks, { type: "audio/wav" });
-    recordedChunks = [];
+  state.mediaRecorder.onstop = async () => {
+    const blob = new Blob(state.recordedChunks, { type: "audio/wav" });
+    state.recordedChunks = [];
     await uploadAudio(blob);
   };
 }
 
+// Error handling and notifications
+const showError = (message) => {
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "error-message";
+  errorDiv.textContent = message;
+  document.body.appendChild(errorDiv);
+  setTimeout(() => errorDiv.remove(), 5000);
+};
+
+const showSuccess = (message) => {
+  const successDiv = document.createElement("div");
+  successDiv.className = "success-message";
+  successDiv.textContent = message;
+  document.body.appendChild(successDiv);
+  setTimeout(() => successDiv.remove(), 3000);
+};
+
 async function uploadAudio(audioBlob) {
   try {
     toggleButtons(true);
-    const audioFileName = `${user.uid}_${session}_${currentIndex}.wav`;
+    const audioFileName = `${state.user.uid}_${state.session}_${state.currentIndex}.wav`;
     const audioFileRef = firebase.storage().ref().child(audioFileName);
-    await audioFileRef.put(audioBlob);
-    console.log("Uploaded audio successfully:", audioFileName);
+
+    const uploadTask = await audioFileRef.put(audioBlob);
+    if (uploadTask.state !== "success") {
+      throw new Error("Failed to upload audio file");
+    }
+
     const downloadURL = await audioFileRef.getDownloadURL();
     console.log("File available at", downloadURL);
 
-    if (!questions[currentIndex].answered) {
-      questions[currentIndex].answered = true;
-      answeredQuestionsCount++;
+    if (!state.questions[state.currentIndex].answered) {
+      state.questions[state.currentIndex].answered = true;
+      state.answeredQuestionsCount++;
+      showSuccess("Recording saved successfully!");
     }
 
     toggleRecordButtons(false);
   } catch (error) {
     console.error("Error uploading audio:", error);
+    showError("Failed to save recording. Please try again.");
   } finally {
     toggleButtons(false);
     updateSubmitButtonState();
@@ -203,10 +281,10 @@ async function uploadAudio(audioBlob) {
 }
 
 function toggleRecordButtons(enable) {
-  if (!isSubscribed) return;
+  if (!state.isSubscribed) return;
   const recordButton = document.getElementById("record-button");
   const stopButton = document.getElementById("stop-button");
-  const currentQuestion = questions[currentIndex];
+  const currentQuestion = state.questions[state.currentIndex];
 
   console.log("currentQuestion", currentQuestion);
 
@@ -248,21 +326,43 @@ function showContent() {
 async function fetchFlashcards() {
   showLoader();
   try {
-    const response = await fetch(
-      "https://us-central1-speechbuddy-30390.cloudfunctions.net/processURL",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gradeLevel,
-          pillar,
-          goal,
-          prompt,
-          userStatus: isSubscribed ? "premium" : "free",
-          studentId: user.uid,
-        }),
+    let prompt = state.prompt;
+
+    // Add scraper data to prompt if available
+    if (state.scrapedData) {
+      if (state.scrapedData.type === "video") {
+        // For videos, use the current session's segment
+        const currentSegment = state.scrapedData.content[state.currentSession];
+        if (currentSegment && currentSegment.length > 0) {
+          prompt += `\nThe questions should be based on the following video information:\n
+            video Transcripts: "${currentSegment.join(" ")}",\n
+            Focus on the key themes in the video description to generate insightful questions, also mention the timestamp at the starting of the question from where this question is.`;
+        }
+      } else if (state.scrapedData.type === "text") {
+        // For text, use the content directly
+        if (state.scrapedData.content) {
+          prompt += `\nThe questions should be based on the following article:\n
+            content: "${state.scrapedData.content}",\n
+            Focus on the key themes in the text description to generate insightful questions.`;
+        }
       }
-    );
+    }
+
+    // Add format instructions
+    prompt += `\nKeep the format in Q: Question and A: Answer should be one sentence long appropriate for ${state.gradeLevel}. no extra strings.`;
+
+    const response = await fetch(window.FUNCTION_URLS.processURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gradeLevel: state.gradeLevel,
+        pillar: state.pillar,
+        goal: state.goal,
+        prompt,
+        userStatus: state.isSubscribed ? "premium" : "free",
+        studentId: state.user.uid,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -272,23 +372,29 @@ async function fetchFlashcards() {
 
     const data = await response.json();
 
-    questions = Object.entries(data.questions).map(([question, answer]) => ({
-      question,
-      answer,
-      answered: false,
-    }));
+    if (!data.questions || Object.keys(data.questions).length === 0) {
+      throw new Error("No flashcards were generated. Please try again.");
+    }
 
-    session = data.session;
+    state.questions = Object.entries(data.questions).map(
+      ([question, answer]) => ({
+        question,
+        answer,
+        answered: false,
+      })
+    );
 
-    console.log("Fetched flashcards:", questions);
+    state.session = data.session;
+    state.answeredQuestionsCount = 0;
+    state.recordedChunks = [];
+    state.mediaRecorder = null;
+    state.currentIndex = 0;
 
-    answeredQuestionsCount = 0;
-    recordedChunks = [];
-    mediaRecorder = null;
-    currentIndex = 0;
+    showSuccess("Flashcards loaded successfully!");
     toggleRecordButtons(true);
   } catch (error) {
     console.error("Error fetching flashcards:", error);
+    showError(error.message || "Failed to load flashcards. Please try again.");
   } finally {
     renderFlashcards();
     hideLoader();
@@ -299,7 +405,7 @@ function renderFlashcards() {
   const flashcardContainer = document.getElementById("flashcardContainer");
   flashcardContainer.innerHTML = "";
 
-  const currentQuestion = questions[currentIndex];
+  const currentQuestion = state.questions[state.currentIndex];
 
   const card = document.createElement("div");
   card.classList.add("card", "current");
@@ -319,7 +425,7 @@ function renderFlashcards() {
   flashcardContainer.appendChild(card);
 
   card.addEventListener("click", () => {
-    if (isSubscribed && !currentQuestion.answered) {
+    if (state.isSubscribed && !currentQuestion.answered) {
       chrome.tts.speak(currentQuestion.question, { rate: 0.8 });
       return;
     }
@@ -334,16 +440,19 @@ function renderFlashcards() {
 
 function updateNavigation() {
   const currentIndexElem = document.getElementById("currentIndex");
-  currentIndexElem.textContent = `${currentIndex + 1} / ${questions.length}`;
+  currentIndexElem.textContent = `${state.currentIndex + 1} / ${
+    state.questions.length
+  }`;
 }
 
 function nextFlashcard() {
-  currentIndex = (currentIndex + 1) % questions.length;
+  state.currentIndex = (state.currentIndex + 1) % state.questions.length;
   renderFlashcards();
 }
 
 function previousFlashcard() {
-  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  state.currentIndex =
+    (state.currentIndex - 1 + state.questions.length) % state.questions.length;
   renderFlashcards();
 }
 
@@ -363,41 +472,59 @@ async function submit() {
   try {
     showLoader();
 
-    if (isSubscribed) {
-      const response = await fetch(
-        "https://us-central1-speechbuddy-30390.cloudfunctions.net/submitSession",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: user.uid,
-            session_id: session,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Submitted session:", data);
+    if (state.isSubscribed) {
+      const response = await fetch(window.FUNCTION_URLS.submitSession, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: state.user.uid,
+          session_id: state.session,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(
           `Error submitting: ${response.status} ${response.statusText}`
         );
       }
+
+      const data = await response.json();
+      console.log("Submitted session:", data);
+      showSuccess("Session submitted successfully!");
     }
-    hideLoader();
   } catch (error) {
     console.error("Error submitting:", error);
+    showError("Failed to submit session. Please try again.");
+  } finally {
+    hideLoader();
   }
 }
 
 function updateSubmitButtonState() {
   const submitButton = document.getElementById("submitButton");
-  if (!isSubscribed) {
+  const generateButton = document.getElementById("generateButton");
+
+  if (!state.isSubscribed) {
     submitButton.style.display = "none";
     return;
   }
-  submitButton.disabled = answeredQuestionsCount < 3;
+
+  // Hide generate button if:
+  // 1. Not a video type
+  // 2. Current session is greater than content length
+  if (state.scrapedData) {
+    if (
+      state.scrapedData.type !== "video" ||
+      (state.scrapedData.content &&
+        state.currentSession >= state.scrapedData.content.length)
+    ) {
+      generateButton.style.display = "none";
+    } else {
+      generateButton.style.display = "inline-block";
+    }
+  }
+
+  submitButton.disabled = state.answeredQuestionsCount < 3;
 }
 
 function showLoader() {

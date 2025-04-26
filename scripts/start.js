@@ -11,7 +11,7 @@ async function start() {
         });
       }
 
-      const subcribed = await isSubscribed(customer.customerId);
+      const subcribed = await isUserSubscribed(customer.customerId);
 
       if (subcribed && customer.tier === "admin") {
         navigateTo("welcome.html");

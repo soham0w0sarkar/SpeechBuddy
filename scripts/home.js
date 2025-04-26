@@ -61,9 +61,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         currentUrl = tabs[0].url;
       }
 
-      const { data } = await chrome.storage.local.get(["data"]);
-
-      if (data?.currentUrl && data.currentUrl === currentUrl) {
+      const data = await DataManager.getData();
+      if (data.currentUrl === currentUrl) {
         navigateTo("renderPopup.html");
       }
 
@@ -645,74 +644,41 @@ const validateForm = () => {
 };
 
 const onContinue = async (isSubscribed) => {
-  showLoader();
+  try {
+    showLoader();
+    let scrapedData = null;
 
-  const additionalFieldsContainer = document.getElementById("additionalFields");
-  const selectedFields = additionalFieldsContainer.querySelectorAll(
-    "input, select, textarea"
-  );
-  const selectedValues = {};
-
-  selectedFields.forEach((field) => {
-    const fieldName = field.name || field.id;
-
-    if (field.type === "checkbox" || field.type === "radio") {
-      if (field.checked) {
-        selectedValues[fieldName] = field.value;
-      }
-    } else {
-      selectedValues[fieldName] = field.value;
-    }
-  });
-
-  Object.keys(selectedValues).forEach((key) => {
-    if (additionalParams.hasOwnProperty(key)) {
-      additionalParams[key] = selectedValues[key];
-    } else if (key.split(" ")[0] === "letter") {
-      additionalParams["letter"].push(selectedValues[key]);
-    } else if (key.split(" ")[0] === "wh") {
-      additionalParams["wh"].push(selectedValues[key]);
-    }
-  });
-
-  let prompt = generatePrompt(
-    selectedGoal,
-    selectedGradeLevel,
-    selectedPillar,
-    additionalParams
-  );
-
-  prompt += `, Keep the format in Q: Question and A: Answer should be one sentence long appropriate for ${selectedGradeLevel}. no extra strings.`;
-
-  let scrapedData;
-
-  if (questionType === "specific") {
-    scrapedData = await sendScrapeRequest();
-
-    if (scrapedData && scrapedData.content) {
-      if (scrapedData.type === "video") {
-        prompt += ` The questions should be based on the following video information:\n
-           video Transcripts: "${scrapedData.content[0].join(" ")}",\n
-           Focus on the key themes in the video description to generate insightful questions, also mention the timestamp at the starting of the question from where this question is.`;
-      } else if (scrapedData.type === "text") {
-        prompt += ` The questions should be based on the following artical :
-          content: "${scrapedData.content}",
-          Focus on the key themes in the text description to generate insightful questions.`;
+    if (questionType === "specific") {
+      scrapedData = await sendScrapeRequest();
+      if (!scrapedData) {
+        throw new Error("Failed to scrape data");
       }
     }
+
+    const prompt = generatePrompt(
+      selectedGoal,
+      selectedGradeLevel,
+      selectedPillar,
+      additionalParams
+    );
+
+    await DataManager.updateData({
+      currentUrl,
+      gradeLevel: selectedGradeLevel,
+      pillar: selectedPillar,
+      goal: selectedGoal,
+      prompt,
+      scrapedData,
+      isSubscribed,
+    });
+
+    navigateTo("renderPopup.html");
+  } catch (error) {
+    console.error("Error in onContinue:", error);
+    showError("Failed to process request. Please try again.");
+  } finally {
+    hideLoader();
   }
-
-  let params = `prompt=${prompt}`;
-  params += `&gradeLevel=${selectedGradeLevel}`;
-  params += `&pillar=${selectedPillar}`;
-  params += `&goal=${selectedGoal}`;
-  params += `&subscribedUser=${isSubscribed.toString()}`;
-  params += `&scrappedData=${
-    (scrapedData && JSON.stringify(scrapedData)) || ""
-  }`;
-
-  hideLoader();
-  navigateTo("renderPopup.html?" + params);
 };
 
 const populateDropdown = (selectElement, options, name) => {
@@ -1061,3 +1027,20 @@ function generatePrompt(goal, gradeLevel, pillar, additionalParams) {
       return "";
   }
 }
+
+// Error handling and notifications
+const showError = (message) => {
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "error-message";
+  errorDiv.textContent = message;
+  document.body.appendChild(errorDiv);
+  setTimeout(() => errorDiv.remove(), 5000);
+};
+
+const showSuccess = (message) => {
+  const successDiv = document.createElement("div");
+  successDiv.className = "success-message";
+  successDiv.textContent = message;
+  document.body.appendChild(successDiv);
+  setTimeout(() => successDiv.remove(), 3000);
+};

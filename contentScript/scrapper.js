@@ -6,6 +6,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         if (pageUrl.includes("youtube.com/watch")) {
           const content = await getVideoDetails();
+          console.log(content);
           sendResponse({ content, type: "video" });
         } else {
           const scrapedText = scrapePageContent();
@@ -83,6 +84,8 @@ const getVideoDetails = async () => {
     const panelContent = panelElement.innerText;
     const lines = panelContent.split("\n");
     const fiveMinuteSegments = {};
+    let currentSegment = [];
+    let currentTime = null;
 
     lines.forEach((line) => {
       const timeMatch = line.match(/^(\d+):(\d{2})/);
@@ -92,16 +95,24 @@ const getVideoDetails = async () => {
           Math.floor(minutes / 5) * 5 + 4
         }`;
 
-        if (!fiveMinuteSegments[segmentKey]) {
-          fiveMinuteSegments[segmentKey] = [];
+        if (currentTime !== segmentKey) {
+          if (currentSegment.length > 0) {
+            fiveMinuteSegments[currentTime] = currentSegment;
+          }
+          currentTime = segmentKey;
+          currentSegment = [line];
+        } else {
+          currentSegment.push(line);
         }
-      }
-
-      const lastKey = Object.keys(fiveMinuteSegments).at(-1);
-      if (lastKey) {
-        fiveMinuteSegments[lastKey].push(line);
+      } else if (currentTime) {
+        currentSegment.push(line);
       }
     });
+
+    // Add the last segment
+    if (currentSegment.length > 0) {
+      fiveMinuteSegments[currentTime] = currentSegment;
+    }
 
     // Convert the object values into an array of arrays
     const formattedSegments = Object.values(fiveMinuteSegments);

@@ -19,7 +19,7 @@ async function signup() {
       .auth()
       .createUserWithEmailAndPassword(email, password);
 
-    const id = await createStripeCustomer(email, userCredential.user.uid);
+    const id = await createCustomer(email);
 
     if (!id) {
       throw new Error("Error creating customer in Stripe");
@@ -50,31 +50,27 @@ async function signup() {
   }
 }
 
-async function createStripeCustomer(email, uid) {
+async function createCustomer(email) {
   try {
-    const response = await fetch(
-      "https://us-central1-speechbuddy-30390.cloudfunctions.net/createCustomer",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, description: `Customer for ${uid}` }),
+    const response = await fetch(window.FUNCTION_URLS.createCustomer, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        email: email,
+        uid: firebase.auth().currentUser.uid,
+      }),
+    });
 
     if (!response.ok) {
-      console.error("Stripe Create Customer response was not ok");
-      return null;
+      throw new Error("Failed to create customer");
     }
 
     const data = await response.json();
-    return data.id;
+    return data.customerId;
   } catch (error) {
-    console.error(
-      "There was a problem with creating the Customer in Stripe:",
-      error,
-    );
+    console.error("Error creating customer:", error);
     return null;
   }
 }
@@ -95,3 +91,6 @@ async function cleanupFailedSignup() {
     await firebase.auth().signOut();
   }
 }
+
+// Export the function
+window.createCustomer = createCustomer;
