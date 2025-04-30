@@ -3,20 +3,30 @@ async function start() {
     if (user) {
       const customer = await fetchFirebaseData(user.uid);
 
-      if (customer.buddyList) {
-        customer.buddyList.forEach(async (buddyId) => {
-          if (user.uid === buddyId) {
+      const userData = {
+        email: user.email,
+        uid: user.uid,
+        customerId: customer.customerId,
+        tier: customer.tier,
+        canAccess: customer.canAccess || false,
+        subscription_status: customer.subscription_status || "expired",
+        sessionCount: customer.sessionCount || 0,
+        buddyList: customer.buddyList || [],
+        isSelfBuddy: customer.isSelfBuddy || false,
+      };
+
+      await window.userStore.setUser(userData);
+
+      if (window.userStore.hasActiveSubscription()) {
+        if (window.userStore.isAdmin()) {
+          if (userData.isSelfBuddy) {
             navigateTo("home.html");
+          } else {
+            navigateTo("welcome.html");
           }
-        });
-      }
-
-      const subcribed = await isUserSubscribed(customer.customerId);
-
-      if (subcribed && customer.tier === "admin") {
-        navigateTo("welcome.html");
-      } else if (subcribed && customer.tier === "buddy") {
-        navigateTo("home.html");
+        } else if (window.userStore.isBuddy()) {
+          navigateTo("home.html");
+        }
       } else {
         navigateTo("convince.html");
       }
@@ -25,6 +35,7 @@ async function start() {
       window.location.pathname !== "/signup.html" &&
       window.location.pathname !== "/reset_password.html"
     ) {
+      await window.userStore.clearUser();
       navigateTo("login.html");
     }
   });

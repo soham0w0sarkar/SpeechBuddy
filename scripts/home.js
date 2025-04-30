@@ -74,15 +74,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       let gradeLevel, pillar, goal;
       isSubscribed = false;
 
-      const customer = await fetchUserAndCheckTier(user.uid);
-
-      if (customer.tier === "buddy" || customer.tier === "admin") {
-        gradeLevel = customer.gradeLevel;
-        pillar = customer.pillar;
-        goal = customer.goal;
-        isSubscribed = true;
-        if (customer.tier === "admin") {
-          dashboardButton.classList.remove("hidden");
+      const userData = window.userStore.getState().user;
+      if (userData) {
+        if (window.userStore.isBuddy() || window.userStore.isAdmin()) {
+          gradeLevel = userData.gradeLevel;
+          pillar = userData.pillar;
+          goal = userData.goal;
+          isSubscribed = true;
+          if (window.userStore.isAdmin()) {
+            dashboardButton.classList.remove("hidden");
+          }
         }
       }
 
@@ -153,6 +154,9 @@ const setupGradePillarGoalSelection = () => {
 
   goalSelect.addEventListener("change", () => {
     selectedGoal = goalSelect.value;
+    // Clear checkbox arrays when goal changes
+    additionalParams.letter = [];
+    additionalParams.wh = [];
   });
 
   [gradeLevelSelect, pillarSelect, goalSelect].forEach((select) => {
@@ -179,15 +183,13 @@ const renderAdditionalOptions = () => {
 
 function renderCommonFields(pillar, goal) {
   if (pillar === "Articulation") {
+    // Initialize position in additionalParams if not already set
+    if (!additionalParams.position) {
+      additionalParams.position = "";
+    }
     return `
-            <label for="position">Select Position:</label>
-            <select id="position" name="position">${generateOptions(
-              optionsMap.position
-            )}</select>
-            <label for="level">Select Level:</label>
-            <select id="level" name="level">${generateOptions(
-              optionsMap.level
-            )}</select>
+            ${generateDropdown("position", optionsMap.position)}
+            ${generateDropdown("level", optionsMap.level)}
         `;
   }
   return "";
@@ -394,7 +396,31 @@ function generateCheckboxes(options, name) {
 document.addEventListener("change", function (event) {
   cleanUpAdditionalFields();
 
-  const { id, value } = event.target;
+  const { id, value, type } = event.target;
+  console.log("Field changed:", { id, value, type });
+  console.log("Current additionalParams:", { ...additionalParams });
+
+  // Handle checkbox changes
+  if (type === "checkbox") {
+    // Get the base name from the checkbox's name attribute
+    const name = event.target.name.split(" ")[0];
+
+    // Initialize the array if it doesn't exist
+    if (!additionalParams[name]) {
+      additionalParams[name] = [];
+    }
+
+    if (event.target.checked) {
+      additionalParams[name].push(value);
+    } else {
+      additionalParams[name] = additionalParams[name].filter(
+        (v) => v !== value
+      );
+    }
+  } else {
+    // Handle all other form fields
+    additionalParams[id] = value;
+  }
 
   if (id === "marker") {
     let additionalFields = "";
@@ -582,6 +608,8 @@ document.addEventListener("change", function (event) {
     }
   }
 
+  // After updating additionalParams
+  console.log("Updated additionalParams:", { ...additionalParams });
   validateForm();
 });
 
@@ -693,8 +721,7 @@ const populateDropdown = (selectElement, options, name) => {
 
 const signout = async () => {
   showLoader();
-  deleteUserCookie();
-
+  window.userStore.clearUser();
   await chrome.storage.local.clear();
 
   firebase
@@ -708,25 +735,6 @@ const signout = async () => {
       console.error("Error signing out:", error);
       hideLoader();
     });
-};
-
-const fetchUserAndCheckTier = async (uid) => {
-  try {
-    showLoader();
-    const customer = await fetchFirebaseData(uid);
-
-    if (!customer) {
-      throw new Error("Error fetching user data from Firebase");
-    }
-    saveUserToCookie(customer);
-    hideLoader();
-
-    return customer;
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    hideLoader();
-    throw error;
-  }
 };
 
 const gradeLevelOptions = [
@@ -748,24 +756,21 @@ const gradeLevelOptions = [
 
 const goalOptionsMap = {
   Articulation: ["Consonant Clusters", "Letter Sounds"],
-  // Expressive: [
-  //   "Labeling",
-  //   "Sequence",
-  //   "Definitions",
-  //   "Morphology",
-  //   "Syntax",
-  //   "Narrative",
-  //   "Figurative Language",
-  // ],
-  // Phonology: [
-  //   "Multisyllabic Words",
-  //   "Assimilation",
-  //   "Minimal Pairs",
-  //   "Substitution",
-  // ],
-
-  Phonology: ["Multisyllabic Words", "Minimal Pairs"],
-  Expressive: ["Syntax", "Figurative Language"],
+  Expressive: [
+    "Labeling",
+    "Sequence",
+    "Definitions",
+    "Morphology",
+    "Syntax",
+    "Narrative",
+    "Figurative Language",
+  ],
+  Phonology: [
+    "Multisyllabic Words",
+    "Assimilation",
+    "Minimal Pairs",
+    "Substitution",
+  ],
   Receptive: ["Categories", "Vocabulary", "Following Directions"],
   Pragmatics: ["Conversation"],
   Fluency: ["Desensitization", "Techniques"],

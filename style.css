@@ -140,7 +140,7 @@ select {
 }
 
 .checkbox {
-    display: flex;
+    display: flex; 
     gap: 10px;
     margin: 10px;
     padding-left: 10px;

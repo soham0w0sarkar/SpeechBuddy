@@ -59,7 +59,7 @@ async function handleInvitationCodeSubmission(user) {
       {
         status: "accepted",
       },
-      "Invitations",
+      "Invitations"
     );
 
     console.log("Invitation processed successfully.");

@@ -23,3 +23,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutButton = document.getElementById("logout-button");
+  logoutButton.addEventListener("click", signout);
+});
+
+const signout = async () => {
+  showLoader();
+  window.userStore.clearUser();
+  await chrome.storage.local.clear();
+
+  firebase
+    .auth()
+    .signOut()
+    .then(() => {
+      hideLoader();
+      navigateTo("login.html");
+    })
+    .catch((error) => {
+      console.error("Error signing out:", error);
+      hideLoader();
+    });
+};

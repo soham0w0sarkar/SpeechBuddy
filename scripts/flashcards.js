@@ -53,6 +53,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadState();
     updateSubmitButtonState();
 
+    const userState = window.userStore.getState();
+    state.isSubscribed = userState.user?.subscription_status === "active";
+
     if (!state.isSubscribed) {
       const recordButton = document.getElementById("record-button");
       if (recordButton) recordButton.style.display = "none";

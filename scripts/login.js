@@ -23,29 +23,34 @@ function login() {
       if (!firebaseDoc) {
         throw new Error("Error fetching data from Firebase");
       }
-      const subscribed = await isSubscribed(firebaseDoc.customerId);
-      saveUserToCookie({
+
+      const userData = {
         email: email,
-        subscribed: subscribed,
         uid: user.uid,
         customerId: firebaseDoc.customerId,
-      });
+        tier: firebaseDoc.tier,
+        canAccess: firebaseDoc.canAccess || false,
+        subscription_status: firebaseDoc.subscription_status || "expired",
+        sessionCount: firebaseDoc.sessionCount || 0,
+        buddyList: firebaseDoc.buddyList || [],
+        isSelfBuddy: firebaseDoc.isSelfBuddy || false,
+      };
+
+      window.userStore.setUser(userData);
+
       hideLoader();
       document.getElementById("login-error-message").textContent =
         "Login successful";
 
-      if (subscribed && firebaseDoc.tier === "buddy") {
-        navigateTo("home.html");
-      } else if (subscribed && firebaseDoc.tier === "admin") {
-        let access = false;
-        firebaseDoc.buddyList.forEach((buddyId) => {
-          if (user.uid === buddyId) {
+      if (firebaseDoc.subscription_status === "active") {
+        if (firebaseDoc.tier === "admin") {
+          if (firebaseDoc.isSelfBuddy) {
             navigateTo("home.html");
-            access = true;
+          } else {
+            navigateTo("welcome.html");
           }
-        });
-        if (!access) {
-          navigateTo("welcome.html");
+        } else if (firebaseDoc.tier === "buddy") {
+          navigateTo("home.html");
         }
       } else {
         navigateTo("convince.html");

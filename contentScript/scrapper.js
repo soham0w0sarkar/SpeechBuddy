@@ -98,7 +98,7 @@ const getVideoDetails = async () => {
         if (currentTime !== segmentKey) {
           if (currentSegment.length > 0) {
             fiveMinuteSegments[currentTime] = currentSegment;
-          }
+        }
           currentTime = segmentKey;
           currentSegment = [line];
         } else {
@@ -112,7 +112,7 @@ const getVideoDetails = async () => {
     // Add the last segment
     if (currentSegment.length > 0) {
       fiveMinuteSegments[currentTime] = currentSegment;
-    }
+      }
 
     // Convert the object values into an array of arrays
     const formattedSegments = Object.values(fiveMinuteSegments);

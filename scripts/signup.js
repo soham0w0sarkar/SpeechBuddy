@@ -25,18 +25,20 @@ async function signup() {
       throw new Error("Error creating customer in Stripe");
     }
 
-    await createFirebaseData(userCredential.user.uid, {
+    const userData = {
       email,
       customerId: id,
       tier: "free",
-    });
+      canAccess: false,
+      subscription_status: "expired",
+      sessionCount: 0,
+    };
+
+    await createFirebaseData(userCredential.user.uid, userData);
+
+    window.userStore.setUser(userData);
 
     hideLoader();
-    saveUserToCookie({
-      email,
-      customerId: id,
-      tier: "free",
-    });
     clearSignupFields();
     displaySignupMessage("Signup successful");
     navigateTo("invitation.html");
@@ -59,7 +61,7 @@ async function createCustomer(email) {
       },
       body: JSON.stringify({
         email: email,
-        uid: firebase.auth().currentUser.uid,
+        description: firebase.auth().currentUser.uid,
       }),
     });
 
@@ -68,7 +70,8 @@ async function createCustomer(email) {
     }
 
     const data = await response.json();
-    return data.customerId;
+    console.log(data);
+    return data.id;
   } catch (error) {
     console.error("Error creating customer:", error);
     return null;

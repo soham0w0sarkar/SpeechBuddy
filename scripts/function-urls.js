@@ -1,16 +1,18 @@
 // Function URLs configuration
 
-const BASE_URL = "http://127.0.0.1:5001/speechbuddy-30390/us-central1";
+const BASE_URL_EMULATOR = "http://127.0.0.1:5001/speechbuddy-30390/us-central1";
+const BASE_URL_PRODUCTION =
+  "https://us-central1-speechbuddy-30390.cloudfunctions.net";
 
 const FUNCTION_URLS = {
-  processURL: `${BASE_URL}/processURL`,
-  submitSession: `${BASE_URL}/submitSession`,
-  createCustomerSession: `${BASE_URL}/createCustomerSession`,
-  sendInvitationEmail: `${BASE_URL}/sendInvitationEmail`,
-  webhooks: `${BASE_URL}/webhooks`,
-  createToken: `${BASE_URL}/createToken`,
-  createCustomer: `${BASE_URL}/createCustomer`,
-  getSubscriptions: `${BASE_URL}/getSubscriptions`,
+  processURL: `${BASE_URL_EMULATOR}/processURL`,
+  submitSession: `${BASE_URL_EMULATOR}/submitSession`,
+  createCustomerSession: `${BASE_URL_EMULATOR}/createCustomerSession`,
+  sendInvitationEmail: `${BASE_URL_EMULATOR}/sendInvitationEmail`,
+  webhooks: `${BASE_URL_EMULATOR}/webhooks`,
+  createToken: `${BASE_URL_PRODUCTION}/createToken`,
+  createCustomer: `${BASE_URL_PRODUCTION}/createCustomer`,
+  getSubscriptions: `${BASE_URL_PRODUCTION}/getSubscriptions`,
 };
 
 // Export the URLs

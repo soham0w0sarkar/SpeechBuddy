@@ -7,7 +7,6 @@ const DATA_STRUCTURE = {
   prompt: null,
   scrapedData: null,
   isSubscribed: false,
-  user: null,
   session: null,
 };
 
