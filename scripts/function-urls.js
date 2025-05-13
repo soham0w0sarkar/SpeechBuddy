@@ -13,6 +13,7 @@ const FUNCTION_URLS = {
   createToken: `${BASE_URL_PRODUCTION}/createToken`,
   createCustomer: `${BASE_URL_PRODUCTION}/createCustomer`,
   getSubscriptions: `${BASE_URL_PRODUCTION}/getSubscriptions`,
+  getYouTubeTranscript: `${BASE_URL_EMULATOR}/getYouTubeTranscript`,
 };
 
 // Export the URLs

@@ -49,22 +49,11 @@
       </header>
       <div class="main">
         <div id="formContainer">
-          <label
-            id="tailoredQuestionsLabel"
-            class="hidden"
-            for="tailoredQuestions"
-          >
-            Tailored questions:
+          <label id="tailoredQuestionsLabel" for="tailoredQuestions">
+            Tailored Questions:
           </label>
-          <select id="tailoredQuestions" class="hidden">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-          <label id="questionTypeLabel" for="questionType">
-            Select Question Type:
-          </label>
-          <select id="questionType">
-            <option value="">Select Question Type</option>
+          <select id="tailoredQuestions">
+            <option value="">Select Tailored Questions</option>
           </select>
           <label for="gradeLevel">Select Grade Level:</label>
           <select id="gradeLevel">
@@ -97,6 +86,7 @@
       <img src="assets/logo_32.png" alt="Loading..." />
     </div>
 
+    <script src="scripts/notifications.js"></script>
     <script src="firebase-app-compat.js"></script>
     <script src="scripts/store/userStore.js"></script>
     <script src="firebase-auth-compat.js"></script>

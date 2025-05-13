@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const backButton = document.getElementById("back");
     backButton.addEventListener("click", async () => {
       try {
+        await DataManager.updateData({
+          currentUrl: null,
+        });
         navigateTo("home.html");
       } catch (error) {
         console.error("Error navigating back:", error);

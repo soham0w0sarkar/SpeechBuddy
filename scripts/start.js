@@ -17,6 +17,8 @@ async function start() {
 
       await window.userStore.setUser(userData);
 
+      console.log(userData);
+
       if (window.userStore.hasActiveSubscription()) {
         if (window.userStore.isAdmin()) {
           if (userData.isSelfBuddy) {

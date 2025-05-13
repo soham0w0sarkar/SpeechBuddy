@@ -494,6 +494,12 @@ async function submit() {
       const data = await response.json();
       console.log("Submitted session:", data);
       showSuccess("Session submitted successfully!");
+
+      // Disable submit button after successful submission
+      const submitButton = document.getElementById("submitButton");
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
     }
   } catch (error) {
     console.error("Error submitting:", error);
@@ -522,8 +528,10 @@ function updateSubmitButtonState() {
         state.currentSession >= state.scrapedData.content.length)
     ) {
       generateButton.style.display = "none";
+      generateButton.disabled = true;
     } else {
       generateButton.style.display = "inline-block";
+      generateButton.disabled = false;
     }
   }
 
